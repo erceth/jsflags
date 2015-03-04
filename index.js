@@ -1,6 +1,7 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var fs = require('fs');
 
 app.get('/', function(req, res) {
     res.sendFile(__dirname + "/public/index.html");
@@ -41,3 +42,7 @@ io.on("connection", function(socket) {
         gameState[0].position.x = gameState[0].position.x + position;
     });
 });
+
+
+var map = JSON.parse(fs.readFileSync('maps/squares.json', 'utf8'))
+	console.log(map);
