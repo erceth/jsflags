@@ -9,9 +9,13 @@ window.onload = function() {
 
     socket.on('refresh', function(gameState) {
         screen.clearRect(0, 0, gameState.map.dimensions.width, gameState.map.dimensions.height);
+        
+        //TODO: move out of refresh function
+        screen.canvas.width = gameState.map.dimensions.width;
+        screen.canvas.height = gameState.map.dimensions.height;
+
         for (var i = 0; i < gameState.tanks.length; i++) {
             var o = gameState.tanks[i];
-            console.log(o.position.x, o.position.y);
             screen.fillRect(o.position.x, o.position.y, o.size.height, o.size.width);
         }
 

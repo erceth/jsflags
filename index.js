@@ -22,6 +22,7 @@ var map = {
 
 var options = {
 	numOfTanks: 1,
+	maxTankSpeed: 1
 };
 
 var gameState = {
@@ -31,28 +32,43 @@ var gameState = {
 
 var Tank = function() {
 	this.size = {height: 15, width: 15};
-	this.position = {x: 200, y: 200};
+	this.position = {x: 100, y: 100};
 	this.positionStep = {x: 0, y: 0};
 	this.angle = 90; //0 to 359
-	this.speed = .1; //0 to 1
-	this.angelVel = 1; //-1 to 1
+	this.speed = .1; //-1 to 1
+	this.angelVel = -1; //-1 to 1
 };
 
 Tank.prototype = {
 	update: function() {
 		this.angle += this.angelVel;
-		//radians = degrees * (pi/180)
-		var radians = this.angle * (Math.PI/180);
-		this.positionStep.x += Math.cos(radians);
-		this.positionStep.y += Math.sin(radians);
+		this.angle = this.angle % 360;  //prevent angle overflow
 
-		console.log(this.positionStep.x, this.positionStep.y);
+		//keep speed within max speed
+		if (this.speed > options.maxTankSpeed) {
+			this.speed = options.maxTankSpeed;
+		}
+		if (this.speed < -options.maxTankSpeed) {
+			this.speed = -options.maxTankSpeed;
+		}
+
+		var radians = this.angle * (Math.PI/180);
+		radians = round(radians, 4);
+
+		console.log(this.angle, radians);		
+
+		this.positionStep.x = Math.cos(radians) + this.position.x;
+		this.positionStep.y = Math.sin(radians) + this.position.y;
+		
+		//prevent falling
 		if (this.positionStep.x > 0 && this.positionStep.x < 900) {
 			this.position.x = this.positionStep.x;
 		}
 		if (this.positionStep.y > 0 && this.positionStep.y < 900) {
 			this.position.y = this.positionStep.y;
 		}
+
+		
 		
 	}
 };
@@ -69,7 +85,7 @@ function updateTanks() {
 }
 
 
-setInterval(update, 1000 / 60);
+setInterval(update, 1000 / 30);  //denom is fps
 
 function update() {
 	updateTanks();
@@ -86,6 +102,10 @@ io.on("connection", function(socket) {
     });
 });
 
+
+function round(value, decimals) {
+    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
 
 var map = JSON.parse(fs.readFileSync('maps/squares.json', 'utf8'))
 	console.log(map);
