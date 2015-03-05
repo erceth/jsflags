@@ -22,13 +22,39 @@ var map = {
 
 var options = {
 	numOfTanks: 1,
-	maxTankSpeed: 1
+	maxTankSpeed: 1,
+	friendlyFire: false
 };
 
 var gameState = {
 	map: map,
 	tanks: []
 }
+
+var Game = function() {
+
+	//load and create map object
+	//create bounderies
+	//create grass
+	//create players
+	  //player creates their tanks
+	  //place tanks randomly
+	//set player home back location
+
+
+
+
+};
+
+Game.prototype = {
+	//loop through bodies
+	  //remove bodies coliding with bullets
+
+};
+
+
+var Player
+
 
 var Tank = function() {
 	this.size = {height: 15, width: 15};
