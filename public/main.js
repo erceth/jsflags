@@ -2,20 +2,26 @@ window.onload = function() {
 
     var canvas = document.getElementById("canvas");
     var screen = canvas.getContext("2d");
-    
-
     var socket = io();
+
+    var dimensions = {};
+
+    socket.on("init", function(initInfo) {
+        dimensions = initInfo.dimensions;
+        screen.canvas.width = dimensions.width;
+        screen.canvas.height = dimensions.height;
+    });
 
 
     socket.on('refresh', function(gameState) {
-        screen.clearRect(0, 0, gameState.map.dimensions.width, gameState.map.dimensions.height);
+        screen.clearRect(0, 0, dimensions.width, dimensions.height);
         
-        //TODO: move out of refresh function
-        screen.canvas.width = gameState.map.dimensions.width;
-        screen.canvas.height = gameState.map.dimensions.height;
 
-        for (var i = 0; i < gameState.tanks.length; i++) {
-            var o = gameState.tanks[i];
+        for (var i = 0; i < gameState.bodies.length; i++) {
+            //TODO: handle different kind of bodies
+            var o = gameState.bodies[i];
+            var color = (o.color) ? o.color : "black";
+            screen.fillStyle = color;
             screen.fillRect(o.position.x, o.position.y, o.size.height, o.size.width);
         }
 
