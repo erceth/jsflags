@@ -9,6 +9,9 @@ app.get('/', function(req, res) {
 app.get('/main.js', function(req, res) {
     res.sendFile(__dirname + "/public/main.js");
 });
+app.get('/styles.css', function(req, res) {
+    res.sendFile(__dirname + "/public/styles.css");
+});
 
 
 http.listen(8001, function() {
@@ -44,14 +47,26 @@ var Game = function(map) {
 		io.emit("refresh", self.gameState);
 	}
 
+	//player setup
 	io.on("connection", function(socket) {
 	    console.log("a user connected");
 	    var init = {
 	    	name: self.map.name,
-	    	dimensions: self.map.dimensions
+	    	dimensions: self.map.dimensions,
+	    	availablePlayers: self.availablePlayers()
 	    };
+
+	    //send map info and available players
 	    io.emit("init", init);
+
+	    //listen for which player is selected
+	    socket.on("playerSelected", function(playerNumber) {
+			console.log(playerNumber);
+		});
+
 	});
+
+	
 };
 
 Game.prototype = {
@@ -71,7 +86,15 @@ Game.prototype = {
 		for (var k = 0; k < this.map.bounderies.length; k++) {
 			this.gameState.bodies.push(this.map.bounderies[k]);
 		}
-
+	},
+	availablePlayers: function() {
+		var availablePlayers = [];
+		for (var i = 0; i < this.Players.length; i++) {
+			if (this.Players[i].isAvailable()) {
+				availablePlayers.push(this.Players[i]);
+			}
+		}
+		return availablePlayers;
 	}
 
 	//loop through bodies
@@ -84,6 +107,7 @@ var Player = function(playerData) {
 	this.playerNumber = playerData.playerNumber;
 	this.playerColor = playerData.color;
 	this.tanks = [];
+	this.available = true;
 
 	for (var i = 0; i < options.numOfTanks; i++) {
 		this.tanks.push(new Tank(playerData, i));
@@ -93,6 +117,15 @@ var Player = function(playerData) {
 };
 
 Player.prototype = {
+	isAvailable: function() {
+		return !!this.available;
+	},
+	setNotAvailable: function() {
+		this.available = false;
+	},
+	setIsAvailable: function() {
+		this.available = true;
+	}
 
 };
 
@@ -130,13 +163,8 @@ Tank.prototype = {
 		var radians = this.angle * (Math.PI/180);
 		radians = round(radians, 4);
 
-		this.positionStep.x = Math.cos(radians) + this.position.x;
-		this.positionStep.y = Math.sin(radians) + this.position.y;
-
-		console.log(radians, Math.sin(radians), this.position.y);
-		
-
-
+		this.positionStep.x = (Math.cos(radians) * this.speed + this.position.x);
+		this.positionStep.y = (Math.sin(radians) * this.speed + this.position.y);
 
 		//prevent falling
 		if (this.positionStep.x > 0 && this.positionStep.x < 900) {

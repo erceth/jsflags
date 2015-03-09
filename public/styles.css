@@ -1,0 +1,27 @@
+#selectionBoard {
+	height: 100%;
+	width: 100%;
+	position: fixed;
+	top: 0;
+	bottom: 0;
+
+	background: #000
+}
+
+#button-wrapper {
+	width: 200px;
+	margin: auto;
+}
+
+.player-button {
+	padding: 10px;
+	display: block;
+	text-align: center;
+	margin-bottom: 10px;
+	cursor: pointer;
+
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+
+}

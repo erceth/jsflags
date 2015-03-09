@@ -10,12 +10,27 @@ window.onload = function() {
         dimensions = initInfo.dimensions;
         screen.canvas.width = dimensions.width;
         screen.canvas.height = dimensions.height;
+
+        var buttonWrapper = $("#button-wrapper");
+
+        for (var i = 0; i < initInfo.availablePlayers.length; i++) {
+        	var button = $("<span class='player-button' data-player-number='" + initInfo.availablePlayers[i].playerNumber + "' style='background-color:" + initInfo.availablePlayers[i].playerColor + " '>Player Number " + initInfo.availablePlayers[i].playerNumber + "</span>").click(function() {
+        		var playerNumber = $(this).data("player-number");
+        		socket.emit("playerSelected", playerNumber);
+        	});
+        	buttonWrapper.append(button);
+
+        	// button.click(function() {
+        	// 	var index = i;
+        	// 	console.log(initInfo.availablePlayers[index]);
+        	// });
+        }
+        //TODO: add observer
     });
 
 
     socket.on('refresh', function(gameState) {
         screen.clearRect(0, 0, dimensions.width, dimensions.height);
-        
 
         for (var i = 0; i < gameState.bodies.length; i++) {
             //TODO: handle different kind of bodies
