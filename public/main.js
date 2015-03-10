@@ -25,6 +25,9 @@ window.onload = function() {
         	// 	console.log(initInfo.availablePlayers[index]);
         	// });
         }
+        buttonWrapper.append("<span class='player-button' style='background-color:#666'>Observer</span>").click(function() {
+        	$("#selectionBoard").fadeOut(3500);
+        });
         //TODO: add observer
     });
 

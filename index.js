@@ -14,16 +14,16 @@ app.get('/styles.css', function(req, res) {
 });
 
 
-http.listen(8001, function() {
-    console.log('listening on *:8001');
-});
-
 // var gameState = {
 // 	map: map,
 // 	tanks: []
 // }
 
-var Game = function(map) {
+var Game = function(map, options) {
+	http.listen(options.port, function() {
+	    console.log('listening on *:8001');
+	});
+
 	this.Players = [];
 	this.map = JSON.parse(fs.readFileSync(map, 'utf8'));
 	this.gameState = {
@@ -42,29 +42,43 @@ var Game = function(map) {
 	//loop
 	setInterval(update, 1000 / 2);  //denom is fps
 	var self = this;
-	function update() {
+	function update() { //TODO: push update function into prototype object
 		self.update();
 		io.emit("refresh", self.gameState);
 	}
 
-	//player setup
+
+	//listen for connections from player
+	for (var j = 0; j < self.Players.length; j++) {
+		var namespace = io.of("player" + self.Players.playerNumber);
+		//expand this
+		namespace.on("connection", function(socket) {
+			console.log("someone connected");
+			//TODO: set player to not available
+			//TODO: refuse other connections until disconnection
+		});
+		self.Players[j].setConnection({namespace: namespace, name: "player" + self.Players.playerNumber});
+	}
+
+
+	//connect on default namespace
 	io.on("connection", function(socket) {
-	    console.log("a user connected");
-	    var init = {
+	    //send map info and available players
+	    io.emit("init", { //TODO: set this on interval to refresh which players are taken
 	    	name: self.map.name,
 	    	dimensions: self.map.dimensions,
 	    	availablePlayers: self.availablePlayers()
-	    };
+	    });
 
-	    //send map info and available players
-	    io.emit("init", init);
+	    //DELETE?
+	 //    //listen for which player is selected
+	 //    socket.on("playerSelected", function(playerNamespace) {
+		// 	console.log(playerNamespace);
+		// });
 
-	    //listen for which player is selected
-	    socket.on("playerSelected", function(playerNumber) {
-			console.log(playerNumber);
-		});
-
+		// console.log(playerNamespace + "selected");
 	});
+
 
 	
 };
@@ -108,6 +122,7 @@ var Player = function(playerData) {
 	this.playerColor = playerData.color;
 	this.tanks = [];
 	this.available = true;
+	this.connection;
 
 	for (var i = 0; i < options.numOfTanks; i++) {
 		this.tanks.push(new Tank(playerData, i));
@@ -125,6 +140,9 @@ Player.prototype = {
 	},
 	setIsAvailable: function() {
 		this.available = true;
+	},
+	setConnection: function(connection) {
+		this.connection = connection;
 	}
 
 };
@@ -194,7 +212,8 @@ Tank.prototype = {
 var options = {
 	numOfTanks: 4,
 	maxTankSpeed: 1,
-	friendlyFire: false
+	friendlyFire: false,
+	port: 8001
 };
 
 new Game("maps/squares.json", options);
