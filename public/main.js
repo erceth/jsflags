@@ -6,29 +6,26 @@ window.onload = function() {
 
     var dimensions = {};
 
-    socket.on("init", function(initInfo) {
-        dimensions = initInfo.dimensions;
+    socket.on("init", function(initData) { console.log(initData);
+        dimensions = initData.dimensions;
         screen.canvas.width = dimensions.width;
         screen.canvas.height = dimensions.height;
 
         var buttonWrapper = $("#button-wrapper");
+        buttonWrapper.empty();
 
-        for (var i = 0; i < initInfo.availablePlayers.length; i++) {
-        	var button = $("<span class='player-button' data-player-number='" + initInfo.availablePlayers[i].playerNumber + "' style='background-color:" + initInfo.availablePlayers[i].playerColor + " '>Player Number " + initInfo.availablePlayers[i].playerNumber + "</span>").click(function() {
-        		var playerNumber = $(this).data("player-number");
-        		socket.emit("playerSelected", playerNumber);
+        for (var i = 0; i < initData.availableConnections.length; i++) {
+        	var button = $("<span class='player-button' data-connection-namespace='" + initData.availableConnections[i].namespace + "' style='background-color:" + initData.availableConnections[i].playerColor + " '>Player Number " + initData.availableConnections[i].playerNumber + "</span>").click(function() {
+        		var playerNumber = $(this).data("connection-namespace");
+        		//TODO: connect to namespace
+        		//TODO: add manual controls
         	});
         	buttonWrapper.append(button);
 
-        	// button.click(function() {
-        	// 	var index = i;
-        	// 	console.log(initInfo.availablePlayers[index]);
-        	// });
         }
         buttonWrapper.append("<span class='player-button' style='background-color:#666'>Observer</span>").click(function() {
         	$("#selectionBoard").fadeOut(3500);
         });
-        //TODO: add observer
     });
 
 

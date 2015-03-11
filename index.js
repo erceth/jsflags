@@ -24,12 +24,16 @@ var Game = function(map, options) {
 	    console.log('listening on *:8001');
 	});
 
+	//variables
 	this.Players = [];
-	this.map = JSON.parse(fs.readFileSync(map, 'utf8'));
 	this.gameState = {
 		bodies:[]
 	};
+	this.connections = [];
+	this.map = JSON.parse(fs.readFileSync(map, 'utf8')); //get map
 
+
+	//create players
 	for (var i = 0; i < this.map.bases.length; i++) {
 		this.Players.push(new Player(this.map.bases[i]));
 	}
@@ -40,25 +44,14 @@ var Game = function(map, options) {
 	//TODO: add bounderies
 
 	//loop
-	setInterval(update, 1000 / 2);  //denom is fps
+	setInterval(update, 1000 / 60);  //denom is fps
 	var self = this;
 	function update() { //TODO: push update function into prototype object
 		self.update();
 		io.emit("refresh", self.gameState);
 	}
 
-
-	//listen for connections from player
-	for (var j = 0; j < self.Players.length; j++) {
-		var namespace = io.of("player" + self.Players.playerNumber);
-		//expand this
-		namespace.on("connection", function(socket) {
-			console.log("someone connected");
-			//TODO: set player to not available
-			//TODO: refuse other connections until disconnection
-		});
-		self.Players[j].setConnection({namespace: namespace, name: "player" + self.Players.playerNumber});
-	}
+	self.createConnections();
 
 
 	//connect on default namespace
@@ -67,7 +60,7 @@ var Game = function(map, options) {
 	    io.emit("init", { //TODO: set this on interval to refresh which players are taken
 	    	name: self.map.name,
 	    	dimensions: self.map.dimensions,
-	    	availablePlayers: self.availablePlayers()
+	    	availableConnections: self.availableConnections()
 	    });
 
 	    //DELETE?
@@ -101,15 +94,22 @@ Game.prototype = {
 			this.gameState.bodies.push(this.map.bounderies[k]);
 		}
 	},
-	availablePlayers: function() {
-		var availablePlayers = [];
-		for (var i = 0; i < this.Players.length; i++) {
-			if (this.Players[i].isAvailable()) {
-				availablePlayers.push(this.Players[i]);
+	createConnections: function () {
+		for (var j = 0; j < this.Players.length; j++) {
+			this.connections.push(new Connection(this.Players[j]));
+		}
+
+	},
+	availableConnections: function() {
+		var availableConnections = [];
+		for (var i = 0; i < this.connections.length; i++) {
+			if (this.connections[i].isAvailable()) {
+				availableConnections.push({namespace: this.connections[i].getNamespace(), playerColor: this.connections[i].getPlayerColor(), playerNumber: this.connections[i].getPlayerNumber()});
 			}
 		}
-		return availablePlayers;
+		return availableConnections;
 	}
+	
 
 	//loop through bodies
 	  //remove bodies coliding with bullets
@@ -121,8 +121,6 @@ var Player = function(playerData) {
 	this.playerNumber = playerData.playerNumber;
 	this.playerColor = playerData.color;
 	this.tanks = [];
-	this.available = true;
-	this.connection;
 
 	for (var i = 0; i < options.numOfTanks; i++) {
 		this.tanks.push(new Tank(playerData, i));
@@ -132,19 +130,20 @@ var Player = function(playerData) {
 };
 
 Player.prototype = {
-	isAvailable: function() {
-		return !!this.available;
+	getPlayerColor: function() {
+		return this.playerColor;
 	},
-	setNotAvailable: function() {
-		this.available = false;
+	getPlayerNumber: function() {
+		return this.playerNumber;
 	},
-	setIsAvailable: function() {
-		this.available = true;
-	},
-	setConnection: function(connection) {
-		this.connection = connection;
+	giveOrders: function(orders) { console.log(orders);
+		for (var i = 0; i < orders.tankNumbers.length; i++) {
+			var tankNumber = parseInt(orders.tankNumbers[i], 10);
+			if (tankNumber || tankNumber === 0 && tankNumber < this.tanks.length && tankNumber >= 0) {
+				this.tanks[tankNumber].giveOrders({speed: orders.speed, angleVel: orders.angleVel});
+			}
+		}
 	}
-
 };
 
 
@@ -161,13 +160,13 @@ var Tank = function(playerData, tankNumber) {
 	this.positionStep = {x: 0, y: 0};
 	this.angle = 90; //0 to 359
 	this.speed = 0; //-1 to 1
-	this.angelVel = 0; //-1 to 1
+	this.angleVel = 0; //-1 to 1
 	this.alive = true;
 };
 
 Tank.prototype = {
 	update: function() {
-		this.angle += this.angelVel;
+		this.angle += this.angleVel;
 		this.angle = this.angle % 360;  //prevent angle overflow
 
 		//keep speed within max speed
@@ -191,7 +190,63 @@ Tank.prototype = {
 		if (this.positionStep.y > 0 && this.positionStep.y < 900) {
 			this.position.y = this.positionStep.y;
 		}
+	},
+	giveOrders: function(order) {
+		this.angleVel = order.angleVel;
+		this.speed = order.speed;
+	}
+};
 
+var Connection = function(player) {
+	this.connection = io.of("player" + player.playerNumber);
+	this.player = player;
+	this.available = true;
+	this.num = 0;
+	var self = this;
+
+
+	this.connection.on("connect", function(socket) {
+		self.num++;
+		if (!self.isAvailable()) { //only allow one person per connection
+			socket.disconnect("connection already being used"); //TODO: not sure if this works //set socket.connect = false ?
+			return;
+		}
+		console.log("someone connected");
+		self.available = false;
+		socket.on("disconnect", function() {
+			console.log("goodbye y'all");
+			self.available = true;
+		});
+		socket.emit("connected", {});
+
+		socket.on("move", function(orders) {
+			self.moveTanks(orders);
+		});
+		
+	});
+};
+
+Connection.prototype = {
+	isAvailable: function() {
+		return !!this.available;
+	},
+	setNotAvailable: function() {
+		this.available = false;
+	},
+	setIsAvailable: function() {
+		this.available = true;
+	},
+	getNamespace: function() {
+		return this.connection.name;
+	},
+	getPlayerColor: function() {
+		return this.player.getPlayerColor();
+	},
+	getPlayerNumber: function() {
+		return this.player.getPlayerNumber();
+	},
+	moveTanks: function(orders) {
+		this.player.giveOrders(orders);
 	}
 };
 
