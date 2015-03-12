@@ -2,6 +2,7 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var fs = require('fs');
+var vm = require('vm');
 
 app.get('/', function(req, res) {
     res.sendFile(__dirname + "/public/index.html");
@@ -13,6 +14,7 @@ app.get('/styles.css', function(req, res) {
     res.sendFile(__dirname + "/public/styles.css");
 });
 
+vm.runInThisContext(fs.readFileSync(__dirname + "/test.js")); //include
 
 // var gameState = {
 // 	map: map,
@@ -53,28 +55,16 @@ var Game = function(map, options) {
 
 	self.createConnections();
 
+	self.initConnection();
 
-	//connect on default namespace
-	io.on("connection", function(socket) {
-	    //send map info and available players
-	    io.emit("init", { //TODO: set this on interval to refresh which players are taken
-	    	name: self.map.name,
-	    	dimensions: self.map.dimensions,
-	    	availableConnections: self.availableConnections()
-	    });
+	//loop through bodies
+	  //remove bodies coliding with bullets
 
-	    //DELETE?
-	 //    //listen for which player is selected
-	 //    socket.on("playerSelected", function(playerNamespace) {
-		// 	console.log(playerNamespace);
-		// });
-
-		// console.log(playerNamespace + "selected");
-	});
 
 
 	
 };
+
 
 Game.prototype = {
 	update: function() {
@@ -91,7 +81,7 @@ Game.prototype = {
 			}
 		}
 		for (var k = 0; k < this.map.bounderies.length; k++) {
-			this.gameState.bodies.push(this.map.bounderies[k]);
+			this.gameState.bodies.push(new Boundery(this.map.bounderies[k]));
 		}
 	},
 	createConnections: function () {
@@ -108,11 +98,27 @@ Game.prototype = {
 			}
 		}
 		return availableConnections;
-	}
-	
+	},
+	initConnection: function() {
+		var self = this;
+		//connect on default namespace
+		io.on("connection", function(socket) {
+		    //send map info and available players
+		    io.emit("init", { //TODO: set this on interval to refresh which players are taken
+		    	name: self.map.name,
+		    	dimensions: self.map.dimensions,
+		    	availableConnections: self.availableConnections()
+		    });
 
-	//loop through bodies
-	  //remove bodies coliding with bullets
+		    //DELETE?
+		 //    //listen for which player is selected
+		 //    socket.on("playerSelected", function(playerNamespace) {
+			// 	console.log(playerNamespace);
+			// });
+
+			// console.log(playerNamespace + "selected");
+		});
+	}
 
 };
 
@@ -136,7 +142,7 @@ Player.prototype = {
 	getPlayerNumber: function() {
 		return this.playerNumber;
 	},
-	giveOrders: function(orders) { console.log(orders);
+	giveOrders: function(orders) {
 		for (var i = 0; i < orders.tankNumbers.length; i++) {
 			var tankNumber = parseInt(orders.tankNumbers[i], 10);
 			if (tankNumber || tankNumber === 0 && tankNumber < this.tanks.length && tankNumber >= 0) {
@@ -146,56 +152,6 @@ Player.prototype = {
 	}
 };
 
-
-var Tank = function(playerData, tankNumber) {
-	this.type = "tank"
-	this.playerNumber = playerData.playerNumber;
-	this.color = playerData.color;
-	this.size = {height: 15, width: 15};
-	this.tankNumber = tankNumber;
-	this.position = {
-		x: playerData.position.x - (playerData.size.width / 2) + (this.size.width * this.tankNumber), 
-		y: playerData.position.y - 1 // TODO: make rows - (playerData.size.height/ 2) + (this.size.height* )
-	};
-	this.positionStep = {x: 0, y: 0};
-	this.angle = 90; //0 to 359
-	this.speed = 0; //-1 to 1
-	this.angleVel = 0; //-1 to 1
-	this.alive = true;
-};
-
-Tank.prototype = {
-	update: function() {
-		this.angle += this.angleVel;
-		this.angle = this.angle % 360;  //prevent angle overflow
-
-		//keep speed within max speed
-		if (this.speed > options.maxTankSpeed) {
-			this.speed = options.maxTankSpeed;
-		}
-		if (this.speed < -options.maxTankSpeed) {
-			this.speed = -options.maxTankSpeed;
-		}
-
-		var radians = this.angle * (Math.PI/180);
-		radians = round(radians, 4);
-
-		this.positionStep.x = (Math.cos(radians) * this.speed + this.position.x);
-		this.positionStep.y = (Math.sin(radians) * this.speed + this.position.y);
-
-		//prevent falling
-		if (this.positionStep.x > 0 && this.positionStep.x < 900) {
-			this.position.x = this.positionStep.x;
-		}
-		if (this.positionStep.y > 0 && this.positionStep.y < 900) {
-			this.position.y = this.positionStep.y;
-		}
-	},
-	giveOrders: function(order) {
-		this.angleVel = order.angleVel;
-		this.speed = order.speed;
-	}
-};
 
 var Connection = function(player) {
 	this.connection = io.of("player" + player.playerNumber);
@@ -208,6 +164,7 @@ var Connection = function(player) {
 	this.connection.on("connect", function(socket) {
 		self.num++;
 		if (!self.isAvailable()) { //only allow one person per connection
+			console.log("connection already being used");
 			socket.disconnect("connection already being used"); //TODO: not sure if this works //set socket.connect = false ?
 			return;
 		}
@@ -249,6 +206,111 @@ Connection.prototype = {
 		this.player.giveOrders(orders);
 	}
 };
+
+
+
+var Tank = function(playerData, tankNumber) {
+	this.type = "tank"
+	this.playerNumber = playerData.playerNumber;
+	this.color = playerData.color;
+	this.size = {height: 15, width: 15};
+	this.tankNumber = tankNumber;
+	this.position = {
+		x: playerData.position.x - (playerData.size.width / 2) + (this.size.width * this.tankNumber), 
+		y: playerData.position.y - 1 // TODO: make rows - (playerData.size.height/ 2) + (this.size.height* )
+	};
+	this.positionStep = {x: 0, y: 0};
+	this.angle = 90; //0 to 359
+	this.speed = 0; //-1 to 1
+	this.angleVel = 0; //-1 to 1
+	this.alive = true;
+};
+
+Tank.prototype = {
+	update: function() {
+		this.angle += this.angleVel;
+		this.angle = this.angle % 360;  //prevent angle overflow
+
+		//keep speed within max speed
+		if (this.speed > options.maxTankSpeed) {
+			this.speed = options.maxTankSpeed;
+		}
+		if (this.speed < -options.maxTankSpeed) {
+			this.speed = -options.maxTankSpeed;
+		}
+
+		var radians = this.angle * (Math.PI/180);
+		radians = round(radians, 4);
+
+		this.positionStep.x = (Math.cos(radians) * this.speed + this.position.x);
+		this.positionStep.y = (Math.sin(radians) * this.speed + this.position.y);
+
+		//prevent falling
+		if (this.positionStep.x > 0 && this.positionStep.x + this.size.width < 900) { //TODO: import map.size
+			this.position.x = this.positionStep.x;
+		}
+		if (this.positionStep.y > 0 && this.positionStep.y + this.size.height < 900) {
+			this.position.y = this.positionStep.y;
+		}
+	},
+	giveOrders: function(order) {
+		this.angleVel = order.angleVel;
+		this.speed = order.speed;
+	},
+	die: function() {
+		//set alive to false
+		//set position to home
+		//set speed and angleVel to 0
+	}
+};
+
+
+var Boundery = function(bounderyData) {
+	this.type = "boundery";
+	this.position = bounderyData.position;
+	this.size = bounderyData.side;
+};
+
+Boundery.prototype = {
+	update: function() {
+		//nothing to update
+	},
+	die: function() {
+		//destroy boundry
+	}
+
+};
+
+var Bullet = function(bulletData) {
+
+};
+
+Bullet.prototype = {
+	update: function() {
+
+	},
+	die: function() {
+
+	}
+
+};
+
+var Flag = function(flagData) {
+
+};
+
+Flag.prototype = {
+	update: function() {
+
+	},
+	die: function() { //reset
+		
+	}
+
+};
+
+
+
 
 //create tanks
 // for (var i = 0; i < options.numOfTanks; i++) {

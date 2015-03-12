@@ -6,7 +6,14 @@ window.onload = function() {
 
     var dimensions = {};
 
-    socket.on("init", function(initData) { console.log(initData);
+    var connected = false;
+
+    socket.on("init", function(initData) {
+    	if (connected) {
+    		return;
+    	}
+    	connected = true;
+    	
         dimensions = initData.dimensions;
         screen.canvas.width = dimensions.width;
         screen.canvas.height = dimensions.height;
