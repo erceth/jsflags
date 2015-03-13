@@ -20,13 +20,6 @@ app.get('/styles.css', function(req, res) {
     res.sendFile(__dirname + "/public/styles.css");
 });
 
-
-module.exports.createObject = function (o) { 
-	function F() {};
-	F.prototype = o;
-	return new F(); 
-}
-
 var options = {
 	numOfTanks: 4,
 	maxTankSpeed: 1,

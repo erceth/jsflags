@@ -1,12 +1,13 @@
 var Tank = require('./tank');
 
-var Player = function(playerData) {
+var Player = function(playerData, options, game) {
 	this.playerNumber = playerData.base.playerNumber;
 	this.playerColor = playerData.base.color;
 	this.tanks = [];
+	this.game = game;
 
 	for (var i = 0; i < playerData.options.numOfTanks; i++) {
-		this.tanks.push(new Tank(playerData.base, i, playerData.options));
+		this.tanks.push(new Tank(playerData.base, i, playerData.options, this.game));
 	}
 
 

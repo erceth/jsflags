@@ -21,7 +21,8 @@ var Game = function(map, options) {
 	//variables
 	this.Players = [];
 	this.gameState = {
-		bodies:[]
+		bodies:[],
+		bullets:[]
 	};
 	this.connections = [];
 	this.map = JSON.parse(fs.readFileSync(map, 'utf8')); //get map
@@ -29,7 +30,7 @@ var Game = function(map, options) {
 
 	//create players
 	for (var i = 0; i < this.map.bases.length; i++) {
-		this.Players.push(new Player({ base: this.map.bases[i], options: options}));
+		this.Players.push(new Player({ base: this.map.bases[i], options: options, game: this}));
 	}
 
 	var self = this;
@@ -62,11 +63,22 @@ var Game = function(map, options) {
 
 Game.prototype = {
 	update: function() {
-		for (var i = 0; i < this.Players.length; i++) {
-			for (var j = 0; j < this.Players[i].tanks.length; j++) {
-				this.Players[i].tanks[j].update();
-			}
+		for (var i = 0; i < this.gameState.bodies.length; i++) {
+			this.gameState.bodies[i].update();
 		}
+
+		/*
+		loop body
+		get calculated move
+		loop all bodies again
+		checkagainst diff types
+			set states in objects
+		}
+		move
+		}
+		filter any dead bullets
+		*/
+
 	},
 	createBodies: function() {
 		for (var i = 0; i < this.Players.length; i++) {
@@ -113,6 +125,9 @@ Game.prototype = {
 
 			// console.log(playerNamespace + "selected");
 		});
+	},
+	addBullet: function(bullet) {
+		this.gameState.bullets.push(bullet);
 	}
 
 };
