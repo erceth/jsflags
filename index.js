@@ -21,73 +21,11 @@ app.get('/styles.css', function(req, res) {
 });
 
 
-// var gameState = {
-// 	map: map,
-// 	tanks: []
-// }
-
-
-
-var Game = require('./game');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var Bullet = function(bulletData) {
-
-};
-
-Bullet.prototype = {
-	update: function() {
-
-	},
-	die: function() {
-
-	}
-
-};
-
-var Flag = function(flagData) {
-
-};
-
-Flag.prototype = {
-	update: function() {
-
-	},
-	die: function() { //reset
-		
-	}
-
-};
-
-
-
-
-//create tanks
-// for (var i = 0; i < options.numOfTanks; i++) {
-// 	gameState.tanks.push(new Tank);
-// }
-
-// function updateTanks() {
-// 	for(var i = 0; i < gameState.tanks.length; i++) {
-// 		gameState.tanks[i].update();
-// 	}
-// }
-
-
-//
+module.exports.createObject = function (o) { 
+	function F() {};
+	F.prototype = o;
+	return new F(); 
+}
 
 var options = {
 	numOfTanks: 4,
@@ -97,24 +35,10 @@ var options = {
 };
 
 
+//create new game
+var Game = require('./src/game');
 new Game("maps/squares.json", options);
 
-// function update() {
-// 	updateTanks();
-    
-// }
-
-// io.on("connection", function(socket) {
-//     console.log("a user connected");
-//     io.emit("init", );
-
-//     socket.on('disconnect', function() {
-//         console.log('user disconnected');
-//     });
-//     socket.on("keyboard", function(position) {
-//         gameState[0].position.x = gameState[0].position.x + position;
-//     });
-// });
 
 
 

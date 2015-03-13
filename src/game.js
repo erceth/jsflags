@@ -3,7 +3,7 @@
 var Player = require('./player');
 var Boundary = require('./boundary');
 var Connection = require('./connection');
-var globals = require('./index');
+var globals = require('../index');
 
 var app = globals.app;
 var fs = globals.fs;
@@ -32,25 +32,27 @@ var Game = function(map, options) {
 		this.Players.push(new Player({ base: this.map.bases[i], options: options}));
 	}
 
+	var self = this;
+
 	//add things to gameState
 	this.gameState.dimensions = this.map.dimensions;
+
+
+
 	this.createBodies();
-	//TODO: add boundaries
 
 	//loop
-	setInterval(update, 1000 / 60);  //denom is fps
-	var self = this;
-	function update() { //TODO: push update function into prototype object
+	setInterval(function () {
 		self.update();
 		io.emit("refresh", self.gameState);
-	}
+	}, 1000 / 60);  //denom is fps
+	
 
 	self.createConnections();
 
 	self.initConnection();
 
-	//loop through bodies
-	  //remove bodies coliding with bullets
+	
 
 
 
@@ -75,6 +77,7 @@ Game.prototype = {
 		for (var k = 0; k < this.map.boundaries.length; k++) {
 			this.gameState.bodies.push(new Boundary(this.map.boundaries[k]));
 		}
+		//create flags
 	},
 	createConnections: function () {
 		for (var j = 0; j < this.Players.length; j++) {

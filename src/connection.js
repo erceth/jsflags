@@ -1,4 +1,4 @@
-var globals = require('./index');
+var globals = require('../index');
 var io = globals.io;
 
 var Connection = function(player) {

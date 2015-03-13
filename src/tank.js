@@ -1,3 +1,6 @@
+var PhysicalObject = require('./physical-object');
+var globals = require('../index');
+
 var Tank = function(playerData, tankNumber, options) {
 	this.type = "tank"
 	this.playerNumber = playerData.playerNumber;
@@ -16,8 +19,10 @@ var Tank = function(playerData, tankNumber, options) {
 	this.alive = true;
 };
 
-Tank.prototype = {
-	update: function() {
+//inherits from Physical Object
+Tank.prototype = globals.createObject(PhysicalObject);
+//functions specific to Tank
+Tank.prototype.update = function() {
 		this.angle += this.angleVel;
 		this.angle = this.angle % 360;  //prevent angle overflow
 
@@ -42,16 +47,15 @@ Tank.prototype = {
 		if (this.positionStep.y > 0 && this.positionStep.y + this.size.height < 900) {
 			this.position.y = this.positionStep.y;
 		}
-	},
-	giveOrders: function(order) {
+};
+Tank.prototype.giveOrders = function(order) {
 		this.angleVel = order.angleVel;
 		this.speed = order.speed;
-	},
-	die: function() {
+};
+Tank.prototype.die = function() {
 		//set alive to false
 		//set position to home
 		//set speed and angleVel to 0
-	}
 };
 
 function round(value, decimals) {
