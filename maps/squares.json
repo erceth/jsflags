@@ -1,8 +1,8 @@
 {
 	"name": "squares",
 	"dimensions": {"width": "900", "height": "900"},
-	"bounderies": [{
-		"type": "boundery",
+	"boundaries": [{
+		"type": "boundary",
 		"position": {"x": "450", "y": "450"},
 		"size": {"height": "100", "width": "100"}
 	}],
