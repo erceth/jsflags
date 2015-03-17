@@ -7,17 +7,22 @@ var Tank = function(playerData, tankNumber, options, game) {
 	this.options = options;
 	this.position = {
 		x: playerData.position.x - (playerData.size.width / 2) + (this.size.width * this.tankNumber), 
-		y: playerData.position.y - 1 // TODO: make rows - (playerData.size.height/ 2) + (this.size.height* )
+		y: playerData.position.y - 1  // TODO: make rows - (playerData.size.height/ 2) + (this.size.height* )
 	};
 	this.positionStep = {x: 0, y: 0};
-	this.angle = 90; //0 to 359
+	this.angle = 100; //0 to 359
 	this.speed = 0; //-1 to 1
 	this.angleVel = 0; //-1 to 1
 	this.alive = true;
 	this.game = game;
 };
 
-Tank.prototype. = function() {
+Tank.prototype = {
+	calculate: function() {
+		//reset postitionStep
+		this.positionStep.x = this.position.x;
+		this.positionStep.y = this.position.y;
+
 		this.angle += this.angleVel;
 		this.angle = this.angle % 360;  //prevent angle overflow
 
@@ -34,18 +39,25 @@ Tank.prototype. = function() {
 
 		this.positionStep.x = (Math.cos(radians) * this.speed + this.position.x);
 		this.positionStep.y = (Math.sin(radians) * this.speed + this.position.y);
-
-		
-};
-Tank.prototype.giveOrders = function(order) {
+	},
+	moveX: function() {
+		this.position.x = this.positionStep.x;
+	},
+	moveY: function() {
+		this.position.y = this.positionStep.y;
+	},
+	giveOrders: function(order) {
 		this.angleVel = order.angleVel;
 		this.speed = order.speed;
-};
-Tank.prototype.die = function() {
+	},
+	die: function() {
 		//set alive to false
 		//set position to home
 		//set speed and angleVel to 0
+	}
 };
+
+
 
 function round(value, decimals) {
     return Number(Math.round(value+'e'+decimals)+'e-'+decimals);

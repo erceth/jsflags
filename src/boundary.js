@@ -1,15 +1,25 @@
 var Boundary = function(boundaryData) {
 	this.type = "boundary";
 	this.position = boundaryData.position;
+	this.positionStep = this.position;
 	this.size = boundaryData.size;
 };
 
-Boundary.prototype.update = function() {
+Boundary.prototype = {
+	calculate: function() {
 		//nothing to update
-};
-Boundary.prototype.die = function() {
-		//destroy boundary
-};
+	},
+	moveX: function() {
+
+	},
+	moveY: function() {
+
+	},
+	die: function() {
+		//destroy boundary ?
+	}
+}
+
 
 
 module.exports = Boundary;

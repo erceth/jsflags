@@ -43,7 +43,7 @@ window.onload = function() {
             //TODO: handle different kind of bodies
             var o = gameState.bodies[i];
             var color = (o.color) ? o.color : "black";
-            screen.fillStyle = color; console.log(o);
+            screen.fillStyle = color;
             screen.fillRect(o.position.x, o.position.y, o.size.height, o.size.width);
         }
 

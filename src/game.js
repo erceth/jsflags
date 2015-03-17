@@ -12,7 +12,6 @@ var http = globals.http;
 var io = globals.io;
 
 
-
 var Game = function(map, options) {
 	http.listen(options.port, function() {
 	    console.log('listening on *:8001');
@@ -46,7 +45,9 @@ var Game = function(map, options) {
 	setInterval(function () {
 		self.update();
 		io.emit("refresh", self.gameState);
-	}, 1000 / 60);  //denom is fps
+	}, 1000 / 10);  //denom is fps
+
+	self.update();
 	
 
 	self.createConnections();
@@ -54,18 +55,63 @@ var Game = function(map, options) {
 	self.initConnection();
 
 	
-
-
-
-	
 };
 
 
 Game.prototype = {
 	update: function() {
-		for (var i = 0; i < this.gameState.bodies.length; i++) {
-			this.gameState.bodies[i].update();
+		var b1 = {}, b2 = {}, i = 0, j = 0;
+		for (i = 0; i < this.gameState.bodies.length; i++) {
+			var okToMoveX = true, okToMoveY = true; //reset
+			b1 = this.gameState.bodies[i];
+			b1.calculate();
+			for (var j = 0; j < this.gameState.bodies.length; j++) {
+				b2 = this.gameState.bodies[j];
+				if (b1 === b2) {continue;}
+				if (b1.type === "tank" && b2.type === "tank" || b2.type === "boundary") { 
+
+					// if(b1.type === "tank" && b1.color === "red" && b1.tankNumber === 1 && b2.type === "tank" && b2.color === "red" && b2.tankNumber === 0) {console.log(b1.positionStep.x, b2.position.x + b2.size.width );}
+					var b1Right = b1.positionStep.x + b1.size.width;
+					var b1Left = b1.positionStep.x;
+					
+					var b2Right = b2.position.x + b2.size.width;
+					var b2Left = b2.position.x;
+
+					var b1Top = b1.positionStep.y;
+					var b1Bottom = b1.positionStep.y + b1.size.height;
+
+					var b2Top = b2.position.y;
+					var b2Bottom = b2.position.y + b2.size.height;
+
+					if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
+						
+						okToMoveX = false;
+						okToMoveY = false;
+					}
+
+					if (b1Right > this.gameState.dimensions.width || b1Left < 0) {
+						okToMoveX = false;
+					}
+
+					if (b1Bottom > this.gameState.dimensions.height || b1Top < 0) {
+						okToMoveY = false;
+					}
+
+
+				}
+				//flag
+
+			}
+
+			if (okToMoveX) {
+				b1.moveX();
+			}
+			if (okToMoveY) {
+				b1.moveY();
+			}
 		}
+
+
 
 		/*
 		loop body
