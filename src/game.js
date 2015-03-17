@@ -45,7 +45,7 @@ var Game = function(map, options) {
 	setInterval(function () {
 		self.update();
 		io.emit("refresh", self.gameState);
-	}, 1000 / 10);  //denom is fps
+	}, 1000 / 60);  //denom is fps
 
 	self.update();
 	
@@ -71,20 +71,20 @@ Game.prototype = {
 				if (b1.type === "tank" && b2.type === "tank" || b2.type === "boundary") { 
 
 					// if(b1.type === "tank" && b1.color === "red" && b1.tankNumber === 1 && b2.type === "tank" && b2.color === "red" && b2.tankNumber === 0) {console.log(b1.positionStep.x, b2.position.x + b2.size.width );}
-					var b1Right = b1.positionStep.x + b1.size.width;
+					var b1Right = b1.positionStep.x - (-b1.size.width); //stupid javascript
 					var b1Left = b1.positionStep.x;
 					
-					var b2Right = b2.position.x + b2.size.width;
+					var b2Right = b2.position.x - (-b2.size.width);
 					var b2Left = b2.position.x;
 
 					var b1Top = b1.positionStep.y;
-					var b1Bottom = b1.positionStep.y + b1.size.height;
+					var b1Bottom = b1.positionStep.y - (-b1.size.height);
 
 					var b2Top = b2.position.y;
-					var b2Bottom = b2.position.y + b2.size.height;
+					var b2Bottom = b2.position.y - (-b2.size.height);
 
 					if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
-						
+						if (this.color === "purple" && this.tankNumber === 1) {console.log(b1Right, b2Left, b1Left, b2Right, b1Top, b2Bottom, b1Bottom, b2Top);}
 						okToMoveX = false;
 						okToMoveY = false;
 					}
