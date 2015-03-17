@@ -20,6 +20,21 @@ app.get('/styles.css', function(req, res) {
     res.sendFile(__dirname + "/public/styles.css");
 });
 
+app.get('/img/red_tank.png', function(req, res) {
+    res.sendFile(__dirname + "/img/red_tank.png");
+});
+app.get('/img/blue_tank.png', function(req, res) {
+    res.sendFile(__dirname + "/img/blue_tank.png");
+});
+app.get('/img/green_tank.png', function(req, res) {
+    res.sendFile(__dirname + "/img/green_tank.png");
+});
+app.get('/img/purple_tank.png', function(req, res) {
+    res.sendFile(__dirname + "/img/purple_tank.png");
+});
+
+
+
 var options = {
 	numOfTanks: 4,
 	maxTankSpeed: 1,

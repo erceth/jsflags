@@ -8,6 +8,17 @@ window.onload = function() {
 
     var connected = false;
 
+    var tankImg = {
+    	red:   new Image(15,15),
+    	blue:  new Image(15,15),
+    	green: new Image(15,15),
+    	purple:new Image(15,15)
+    };
+    tankImg.red.src = "img/red_tank.png";
+    tankImg.blue.src = "img/blue_tank.png";
+    tankImg.green.src = "img/green_tank.png";
+    tankImg.purple.src = "img/purple_tank.png";
+
     socket.on("init", function(initData) {
     	if (connected) {
     		return;
@@ -42,15 +53,43 @@ window.onload = function() {
         for (var i = 0; i < gameState.bodies.length; i++) {
             //TODO: handle different kind of bodies
             var o = gameState.bodies[i];
-            var color = (o.color) ? o.color : "black";
-            screen.fillStyle = color;
-            screen.fillRect(o.position.x, o.position.y, o.size.height, o.size.width);
+            if (o.type === "tank") {
+            	var t = tankImg[o.color];
+	            t.height = o.size.height;
+	            t.width = o.size.width;// console.log(o);
+				//screen.drawImage(t, o.position.x, o.position.y, t.height, t.width);            
+	            drawRotatedImage(t, o.position.x, o.position.y, o.radians, screen);
+            } else {
+            	var color = (o.color) ? o.color : "black";
+	            screen.fillStyle = color;
+	            screen.fillRect(o.position.x, o.position.y, o.size.height, o.size.width);
+            }
         }
 
     });
 
 
 };
+
+function drawRotatedImage(img, x, y, radians, context) {
+	// save the current co-ordinate system 
+	// before we screw with it
+	context.save(); 
+ 
+	// move to the middle of where we want to draw our image
+	context.translate(x + img.width/2, y + img.height/2);
+ 
+	// rotate around that point
+	context.rotate(radians);
+ 
+	// draw it up and to the left by half the width
+	// and height of the image 
+	//context.fillRect(0, 0, 1, 1); //puts a wee dot on the origin
+	//context.drawImage(img, img.width/2, img.width/2, img.height, img.width);
+
+	// and restore the co-ords to how they were when we began
+	context.restore(); 
+}
 
 
 

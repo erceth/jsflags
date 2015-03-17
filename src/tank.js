@@ -10,7 +10,8 @@ var Tank = function(playerData, tankNumber, options, game) {
 		y: playerData.position.y - 1  // TODO: make rows - (playerData.size.height/ 2) + (this.size.height* )
 	};
 	this.positionStep = {x: 0, y: 0};
-	this.angle = 100; //0 to 359
+	this.angle = 0; //0 to 359
+	this.radians;
 	this.speed = 0; //-1 to 1
 	this.angleVel = 0; //-1 to 1
 	this.alive = true;
@@ -34,11 +35,11 @@ Tank.prototype = {
 			this.speed = -this.options.maxTankSpeed;
 		}
 
-		var radians = this.angle * (Math.PI/180);
-		radians = round(radians, 4);
+		this.radians = this.angle * (Math.PI/180);
+		this.radians = round(this.radians, 4);
 
-		this.positionStep.x = (Math.cos(radians) * this.speed + this.position.x);
-		this.positionStep.y = (Math.sin(radians) * this.speed + this.position.y);
+		this.positionStep.x = (Math.cos(this.radians) * this.speed + this.position.x);
+		this.positionStep.y = (Math.sin(this.radians) * this.speed + this.position.y);
 	},
 	moveX: function() {
 		this.position.x = this.positionStep.x;
