@@ -84,8 +84,8 @@ function drawRotatedImage(img, x, y, radians, context) {
  
 	// draw it up and to the left by half the width
 	// and height of the image 
-	//context.fillRect(0, 0, 1, 1); //puts a wee dot on the origin
-	//context.drawImage(img, img.width/2, img.width/2, img.height, img.width);
+	context.fillRect(0, 0, 1, 1); //puts a wee dot on the origin
+	context.drawImage(img, -img.width/2, -img.width/2, img.height, img.width);
 
 	// and restore the co-ords to how they were when we began
 	context.restore(); 
