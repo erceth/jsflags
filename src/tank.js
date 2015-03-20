@@ -1,3 +1,5 @@
+var Bullet = require("./bullet");
+
 var Tank = function(playerData, tankNumber, options, game) {
 	this.type = "tank"
 	this.playerNumber = playerData.playerNumber;
@@ -15,7 +17,10 @@ var Tank = function(playerData, tankNumber, options, game) {
 	this.speed = 0; //-1 to 1
 	this.angleVel = 0; //-1 to 1
 	this.alive = true;
-	this.game = game;
+	//add game's addBullet function to oneself
+	this.addBulletToGame = function(bullet) {
+		game.addBullet(bullet); 
+	};
 };
 
 Tank.prototype = {
@@ -47,11 +52,21 @@ Tank.prototype = {
 	moveY: function() {
 		this.position.y = this.positionStep.y;
 	},
-	giveOrders: function(order) {
+	moveTanks: function(order) {
 		this.angleVel = order.angleVel;
 		this.speed = order.speed;
 	},
+	fireTanks: function(order) {
+		this.addBulletToGame(new Bullet({
+			color: this.color, 
+			radians: this.radians, 
+			options: this.options, 
+			position: this.position,
+			tankSize: this.size
+		}));
+	},
 	die: function() {
+		this.alive = false;
 		//set alive to false
 		//set position to home
 		//set speed and angleVel to 0

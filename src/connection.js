@@ -27,6 +27,9 @@ var Connection = function(player) {
 		socket.on("move", function(orders) {
 			self.moveTanks(orders);
 		});
+		socket.on("fire", function(orders) {
+			self.fireTanks(orders);
+		});
 		
 	});
 };
@@ -51,7 +54,10 @@ Connection.prototype = {
 		return this.player.getPlayerNumber();
 	},
 	moveTanks: function(orders) {
-		this.player.giveOrders(orders);
+		this.player.moveTanks(orders);
+	},
+	fireTanks: function(orders) {
+		this.player.fireTanks(orders);	
 	}
 };
 

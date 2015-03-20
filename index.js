@@ -32,20 +32,24 @@ app.get('/img/green_tank.png', function(req, res) {
 app.get('/img/purple_tank.png', function(req, res) {
     res.sendFile(__dirname + "/img/purple_tank.png");
 });
-
+app.get('/img/grass.png', function(req, res) {
+    res.sendFile(__dirname + "/img/grass.png");
+});
 
 
 var options = {
 	numOfTanks: 4,
 	maxTankSpeed: 1,
 	friendlyFire: false,
-	port: 8001
+	port: 8001,
+	maxBulletSpeed: 5
 };
 
 
 //create new game
 var Game = require('./src/game');
-new Game("maps/squares.json", options);
+var g = new Game("maps/squares.json", options);
+module.exports.Game = g;
 
 
 
