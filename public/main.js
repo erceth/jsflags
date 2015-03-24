@@ -84,6 +84,7 @@ window.onload = function() {
         for (var i = 0; i < gameState.bodies.length; i++) {
             //TODO: handle different kind of bodies
             var o = gameState.bodies[i];
+            if (o.dead) {continue;}
             if (o.type === "tank") {
             	var t = tankImg[o.color];
 	            t.height = o.size.height;

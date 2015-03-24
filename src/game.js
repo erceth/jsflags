@@ -13,7 +13,8 @@ var io = globals.io;
 
 
 var Game = function(map, options) {
-	http.listen(options.port, function() {
+	this.options = options
+	http.listen(this.options.port, function() {
 	    console.log('listening on *:8001');
 	});
 
@@ -29,7 +30,7 @@ var Game = function(map, options) {
 
 	//create players
 	for (var i = 0; i < this.map.bases.length; i++) {
-		this.Players.push(new Player({ base: this.map.bases[i], options: options, game: this}));
+		this.Players.push(new Player({ base: this.map.bases[i], options: this.options, game: this}));
 	}
 
 	var self = this;
@@ -45,7 +46,7 @@ var Game = function(map, options) {
 	setInterval(function () {
 		self.update();
 		io.emit("refresh", self.gameState);
-	}, 1000 / 60);  //denom is fps
+	}, 1000 / 30);  //denom is fps
 
 	self.update();
 	
@@ -60,7 +61,7 @@ var Game = function(map, options) {
 
 Game.prototype = {
 	update: function() {
-		var b1 = {}, b2 = {}, i = 0, j = 0;
+		var b1 = {}, b2 = {}, i = 0, j = 0; 
 		for (i = 0; i < this.gameState.bodies.length; i++) {
 			var okToMoveX = true, okToMoveY = true; //reset
 			b1 = this.gameState.bodies[i];
@@ -79,15 +80,16 @@ Game.prototype = {
 
 				var b2Top = b2.position.y;
 				var b2Bottom = b2.position.y - (-b2.size.height);
-				if (b1.type === "tank" && b2.type === "tank" || b2.type === "boundary") { 
+				if (b1.type === "tank" && (b2.type === "tank" || b2.type === "boundary")) { 
 
 					// if(b1.type === "tank" && b1.color === "red" && b1.tankNumber === 1 && b2.type === "tank" && b2.color === "red" && b2.tankNumber === 0) {console.log(b1.positionStep.x, b2.position.x + b2.size.width );}
 					
 
 					if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
-						if (this.color === "purple" && this.tankNumber === 1) {console.log(b1Right, b2Left, b1Left, b2Right, b1Top, b2Bottom, b1Bottom, b2Top);}
-						okToMoveX = false;
-						okToMoveY = false;
+						if (this.color === "purple" && this.tankNumber === 1) {
+							okToMoveX = false;
+							okToMoveY = false;
+						}
 					}
 
 					if (b1Right > this.gameState.dimensions.width || b1Left < 0) {
@@ -98,13 +100,25 @@ Game.prototype = {
 						okToMoveY = false;
 					}
 
-
 				}
-				else if (b1.type === "bullet") {
+				if (b1.type === "bullet" && b2.type === "tank") {
+					if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
+						if (b1.isFriendly(b2) && this.options.friendlyFireSafe) {
+							b1.die();
+						} else {
+							b1.die();
+							b2.die();
+						}
+					}
+				}
+
+
+				if (b1.type === "bullet") {
+
+					//if bullet left arena
 					if (b1Right > this.gameState.dimensions.width || b1Left < 0) {
 						b1.die();
 					}
-
 					if (b1Bottom > this.gameState.dimensions.height || b1Top < 0) {
 						b1.die();
 					}
@@ -122,9 +136,10 @@ Game.prototype = {
 		}
 
 		//filter out dead bullets
-		this.gameState.bodies.filter(function(body) {
-			return (body.type !== "bullet") || body.alive;
+		this.gameState.bodies = this.gameState.bodies.filter(function(body) {
+			return (body.type !== "bullet") || !body.dead;
 		});
+
 
 
 
@@ -154,7 +169,7 @@ Game.prototype = {
 	},
 	createConnections: function () {
 		for (var j = 0; j < this.Players.length; j++) {
-			this.connections.push(new Connection(this.Players[j]));
+			this.connections.push(new Connection(this.Players[j], this));
 		}
 
 	},

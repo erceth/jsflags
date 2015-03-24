@@ -4,6 +4,7 @@ var Player = function(playerData) {
 	this.playerNumber = playerData.base.playerNumber;
 	this.playerColor = playerData.base.color;
 	this.tanks = [];
+	this.base = playerData.base;
 
 	for (var i = 0; i < playerData.options.numOfTanks; i++) {
 		this.tanks.push(new Tank(playerData.base, i, playerData.options, playerData.game));

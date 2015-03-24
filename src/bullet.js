@@ -16,7 +16,7 @@ var Bullet = function(bulletData) {
 	// 	y: bulletData.position.y + (round(Math.sin(this.radians), 4) >= 0) ? bulletData.tankRadius : -(bulletData.tankRadius)
 	// }; console.log(this.position);
 	this.positionStep = {x: this.position.x, y: this.position.y};
-	this.alive = true;
+	this.dead = false;
 
 
 };
@@ -39,7 +39,10 @@ Bullet.prototype = {
 	},
 	die: function() {
 		//destroy boundary
-		this.alive = false;
+		this.dead = true;
+	},
+	isFriendly: function(otherBody) {
+		return this.color === otherBody.color;
 	}
 };
 

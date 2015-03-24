@@ -1,11 +1,12 @@
 var globals = require('../index');
 var io = globals.io;
 
-var Connection = function(player) {
+var Connection = function(player, game) {
 	this.connection = io.of("player" + player.playerNumber);
 	this.player = player;
 	this.available = true;
 	this.num = 0;
+	this.game = game;
 	var self = this;
 
 
@@ -29,6 +30,37 @@ var Connection = function(player) {
 		});
 		socket.on("fire", function(orders) {
 			self.fireTanks(orders);
+		});
+		socket.on("getDynamicState", function() {
+			var dynamicBodies = [];
+			var b = false;
+			for (var i = 0; i < self.game.gameState.bodies.length; i++) {
+				b = self.game.gameState.bodies[i];
+				if (b.type !== "tank") { continue; }
+				dynamicBodies.push({
+					type: b.type,
+					position: b.position,
+					color: b.color,
+					dead: b.dead,
+					tankNumber: b.tankNumber,
+					angle: b.angle
+				});
+			}
+			socket.emit("returnDynamicState", {dynamicBodies: dynamicBodies});
+		});
+		socket.on("getStaticData", function() { //add  && b.type !== "boundary"
+			var staticPlayerData = [];
+			var p = false;
+			for(var i = 0; i < self.game.Players.length; i++) {
+				p = self.game.Players[i];
+				staticPlayerData.push({
+					playerColor: p.playerColor,
+					base: p.base,
+					numberOfTanks: p.tanks.length
+				});
+			}
+
+			socket.emit("returnStaticData", {staticPlayerData: staticPlayerData});
 		});
 		
 	});
