@@ -46,28 +46,30 @@ var Connection = function(player, game) {
 			// setTimeout(function() {
 			// 	self.dynamicStateCoolDown = false;
 			// }, 500);
-			var b;
-			for (var i = 0, max = self.game.gameState.tanks.length; i < max; i++) {
-				b = self.game.gameState.tanks[i];
-				if (self.dynamicState.tanks[i]) { //if already object there, reuse it.
-					self.dynamicState.tanks[i].type = b.type;
-					self.dynamicState.tanks[i].position = b.position;
-					self.dynamicState.tanks[i].color = b.color;
-					self.dynamicState.tanks[i].dead = b.dead;
-					self.dynamicState.tanks[i].tankNumber = b.tankNumber;
-					self.dynamicState.tanks[i].angle = b.angle;
-				} else {
-					self.dynamicState.tanks[i] = { //otherwise create it.
-						type: b.type,
-						position: b.position,
-						color: b.color,
-						dead: b.dead,
-						tankNumber: b.tankNumber,
-						angle: b.angle	
-					};
-				}
-			}
+
+			// var b;
+			// for (var i = 0, max = self.game.gameState.tanks.length; i < max; i++) {
+			// 	b = self.game.gameState.tanks[i];
+			// 	if (self.dynamicState.tanks[i]) { //if already object there, reuse it.
+			// 		self.dynamicState.tanks[i].type = b.type;
+			// 		self.dynamicState.tanks[i].position = b.position;
+			// 		self.dynamicState.tanks[i].color = b.color;
+			// 		self.dynamicState.tanks[i].dead = b.dead;
+			// 		self.dynamicState.tanks[i].tankNumber = b.tankNumber;
+			// 		self.dynamicState.tanks[i].angle = b.angle;
+			// 	} else {
+			// 		self.dynamicState.tanks[i] = { //otherwise create it.
+			// 			type: b.type,
+			// 			position: b.position,
+			// 			color: b.color,
+			// 			dead: b.dead,
+			// 			tankNumber: b.tankNumber,
+			// 			angle: b.angle	
+			// 		};
+			// 	}
+			// }
 			socket.emit("returnDynamicState", self.dynamicState);
+			//socket.emit("returnDynamicState", {});
 		});
 			
 		

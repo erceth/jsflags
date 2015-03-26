@@ -1,4 +1,4 @@
-var process = require("child_process");
+
 
 var Connection = require('./connection');
 var Player = require('./player');
@@ -62,10 +62,6 @@ var Game = function(map, options) {
 	// 		}, 1000);
 	// 	}
 	// }, 3000);
-
-	// setInterval(function () {
-	//   heapdump.writeSnapshot()
-	// }, 1000 * 20);
 
 
 	self.createConnections();
