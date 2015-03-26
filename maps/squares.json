@@ -1,30 +1,32 @@
 {
 	"name": "squares",
-	"dimensions": {"width": "900", "height": "900"},
-	"boundaries": [{
+	"dimensions": {"width": 900, "height": 900},
+	"boundaries": [
+	{
 		"type": "boundary",
-		"position": {"x": "450", "y": "450"},
-		"size": {"height": "100", "width": "100"}
-	}],
+		"position": {"x": 900, "y": 900},
+		"size": {"height": 1, "width": 1}
+	}
+	],
 	"bases": [{
-		"playerNumber": "1",
+		"playerNumber": 1,
 		"color": "red",
-		"position": {"x": "400", "y": "50"},
-		"size": {"height": "50", "width": "50"}
+		"position": {"x": 400, "y": 50},
+		"size": {"height": 50, "width": 50}
 	}, {
-		"playerNumber": "2",
+		"playerNumber": 2,
 		"color": "blue",
-		"position": {"x": "50", "y": "400"},
-		"size": {"height": "50", "width": "50"}
+		"position": {"x": 50, "y": 400},
+		"size": {"height": 50, "width": 50}
 	}, {
-		"playerNumber": "3",
+		"playerNumber": 3,
 		"color": "green",
-		"position": {"x": "800", "y": "450"},
-		"size": {"height": "50", "width": "50"}
+		"position": {"x": 800, "y": 450},
+		"size": {"height": 50, "width": 50}
 	}, {
-		"playerNumber": "4",
+		"playerNumber": 4,
 		"color": "purple",
-		"position": {"x": "450", "y": "800"},
-		"size": {"height": "50", "width": "50"}
+		"position": {"x": 450, "y": 800},
+		"size": {"height": 50, "width": 50}
 	}]
 }

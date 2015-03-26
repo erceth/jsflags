@@ -1,13 +1,19 @@
 var globals = require('../index');
 var io = globals.io;
 
+
 var Connection = function(player, game) {
 	this.connection = io.of("player" + player.playerNumber);
 	this.player = player;
 	this.available = true;
 	this.num = 0;
 	this.game = game;
+	this.dynamicState = {
+		tanks: [] //tank pool
+	};
+
 	var self = this;
+	this.dynamicStateCoolDown = false;
 
 
 	this.connection.on("connect", function(socket) {
@@ -31,23 +37,46 @@ var Connection = function(player, game) {
 		socket.on("fire", function(orders) {
 			self.fireTanks(orders);
 		});
-		socket.on("getDynamicState", function() {
-			var dynamicBodies = [];
-			var b = false;
-			for (var i = 0; i < self.game.gameState.bodies.length; i++) {
-				b = self.game.gameState.bodies[i];
-				if (b.type !== "tank") { continue; }
-				dynamicBodies.push({
-					type: b.type,
-					position: b.position,
-					color: b.color,
-					dead: b.dead,
-					tankNumber: b.tankNumber,
-					angle: b.angle
-				});
+
+		
+
+		socket.on("getDynamicState", function() { //TODO: limit dynamicState rate
+			// if (self.dynamicStateCoolDown) { return; }
+			// self.dynamicStateCoolDown = true;
+			// setTimeout(function() {
+			// 	self.dynamicStateCoolDown = false;
+			// }, 500);
+			var b;
+			for (var i = 0, max = self.game.gameState.tanks.length; i < max; i++) {
+				b = self.game.gameState.tanks[i];
+				if (self.dynamicState.tanks[i]) { //if already object there, reuse it.
+					self.dynamicState.tanks[i].type = b.type;
+					self.dynamicState.tanks[i].position = b.position;
+					self.dynamicState.tanks[i].color = b.color;
+					self.dynamicState.tanks[i].dead = b.dead;
+					self.dynamicState.tanks[i].tankNumber = b.tankNumber;
+					self.dynamicState.tanks[i].angle = b.angle;
+				} else {
+					self.dynamicState.tanks[i] = { //otherwise create it.
+						type: b.type,
+						position: b.position,
+						color: b.color,
+						dead: b.dead,
+						tankNumber: b.tankNumber,
+						angle: b.angle	
+					};
+				}
 			}
-			socket.emit("returnDynamicState", {dynamicBodies: dynamicBodies});
+			socket.emit("returnDynamicState", self.dynamicState);
 		});
+			
+			nw.on('exit', function (code) {
+			   console.log('Child process exited with exit code '+code);
+			});
+
+
+		
+
 		socket.on("getStaticData", function() { //add  && b.type !== "boundary"
 			var staticPlayerData = [];
 			var p = false;

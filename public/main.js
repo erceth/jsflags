@@ -81,23 +81,53 @@ window.onload = function() {
 
         // screen.drawImage(backgroundImg, 0, 0, dimensions.width, dimensions.height);
 
-        for (var i = 0; i < gameState.bodies.length; i++) {
-            //TODO: handle different kind of bodies
-            var o = gameState.bodies[i];
-            if (o.dead) {continue;}
-            if (o.type === "tank") {
-            	var t = tankImg[o.color];
-	            t.height = o.size.height;
-	            t.width = o.size.width;// console.log(o);
-				//screen.drawImage(t, o.position.x, o.position.y, t.height, t.width);            
-	            drawRotatedImage(t, o.position.x, o.position.y, o.radians, screen);
-            } 
-            else {
-            	var color = (o.color) ? o.color : "black";
-	            screen.fillStyle = color;
-	            screen.fillRect(o.position.x, o.position.y, o.size.height, o.size.width);
-            }
+        //loop tanks
+        var i = gameState.tanks.length, o, color;
+        while((i-=1) >= 0) {
+        	o = gameState.tanks[i];
+        	if (o.dead) {continue;}
+        	var t = tankImg[o.color];
+        	t.height = o.size.height;
+            t.width = o.size.width;
+        	drawRotatedImage(t, o.position.x, o.position.y, o.radians, screen);
         }
+        if (gameState.boundaries.length > 0) {
+        	i = gameState.boundaries.length;
+        	while ((i-=1) >= 0) {
+        		o = gameState.boundaries[i];
+        		color = (o.color) ? o.color : "black";
+        		screen.fillStyle = color;
+        		screen.fillRect(o.position.x, o.position.y, o.size.height, o.size.width);
+        	}
+        }
+        if (gameState.bullets.length > 0) {
+        	i = gameState.bullets.length;
+        	while ((i-=1) >= 0) {
+        		o = gameState.bullets[i];
+        		color = (o.color) ? o.color : "black";
+        		screen.fillStyle = color;
+        		screen.fillRect(o.position.x, o.position.y, o.size.height, o.size.width);
+        	}
+        }
+        
+
+    //     for (var i = 0; i < gameState.bodies.length; i++) {
+    //         //TODO: handle different kind of bodies
+    //         var o = gameState.bodies[i];
+    //         if (o.dead) {continue;}
+    //         if (o.type === "tank") {
+    //         	var t = tankImg[o.color];
+	   //          t.height = o.size.height;
+	   //          t.width = o.size.width;// console.log(o);
+				// //screen.drawImage(t, o.position.x, o.position.y, t.height, t.width);            
+	   //          drawRotatedImage(t, o.position.x, o.position.y, o.radians, screen);
+    //         } 
+    //         else {
+    //         	var color = (o.color) ? o.color : "black";
+	   //          screen.fillStyle = color;
+	   //          screen.fillRect(o.position.x, o.position.y, o.size.height, o.size.width);
+    //         }
+    //     }
 
     });
 

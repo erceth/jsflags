@@ -1,8 +1,8 @@
-
+var heapdump = require('heapdump');
+var process = require("child_process");
 
 var Player = require('./player');
 var Boundary = require('./boundary');
-var Connection = require('./connection');
 var globals = require('../index');
 
 var app = globals.app;
@@ -21,7 +21,8 @@ var Game = function(map, options) {
 	//variables
 	this.Players = [];
 	this.gameState = {
-		bodies:[],
+		tanks:[],
+		boundaries:[],
 		bullets:[]
 	};
 	this.connections = [];
@@ -42,14 +43,30 @@ var Game = function(map, options) {
 
 	this.createBodies();
 
-	//loop
-	setInterval(function () {
-		self.update();
-		io.emit("refresh", self.gameState);
-	}, 1000 / 30);  //denom is fps
 
-	self.update();
-	
+	function startTheLoop() {
+		return setInterval(function () {
+			self.update();
+			io.emit("refresh", self.gameState);
+		}, 1000 / 60);  //denom is fps
+	}
+
+	//this may be unnecesary
+	var intervalId = startTheLoop();
+	setInterval(function() {
+		if (process.memoryUsage().heapUsed > 30000000) {
+			console.log("heap used: " + process.memoryUsage().heapUsed + ". pausing");
+			clearInterval(intervalId);
+			setTimeout(function() {
+				intervalId = startTheLoop();
+			}, 1000);
+		}
+	}, 3000);
+
+	// setInterval(function () {
+	//   heapdump.writeSnapshot()
+	// }, 1000 * 20);
+
 
 	self.createConnections();
 
@@ -61,72 +78,56 @@ var Game = function(map, options) {
 
 Game.prototype = {
 	update: function() {
-		var b1 = {}, b2 = {}, i = 0, j = 0; 
-		for (i = 0; i < this.gameState.bodies.length; i++) {
-			var okToMoveX = true, okToMoveY = true; //reset
-			b1 = this.gameState.bodies[i];
+		//loops tanks
+		var b1, b2, i = this.gameState.tanks.length;
+		while((i-=1) >= 0) {
+			var okToMoveX = true, okToMoveY = true;
+			b1 = this.gameState.tanks[i];
 			b1.calculate();
-			for (var j = 0; j < this.gameState.bodies.length; j++) {
-				b2 = this.gameState.bodies[j];
-				if (b1 === b2) {continue;}
-				var b1Right = b1.positionStep.x - (-b1.size.width); //stupid javascript
+			j = i;
+			while((j-=1) >= 0) {
+				if (i===j) {continue;}
+				b2 = this.gameState.tanks[j];
+				var b1Right = b1.positionStep.x + b1.size.width;
 				var b1Left = b1.positionStep.x;
 				
-				var b2Right = b2.position.x - (-b2.size.width);
+				var b1Top = b1.positionStep.y;
+				var b1Bottom = b1.positionStep.y + b1.size.height;
+
+				var b2Right = b2.position.x + b2.size.width;
 				var b2Left = b2.position.x;
 
-				var b1Top = b1.positionStep.y;
-				var b1Bottom = b1.positionStep.y - (-b1.size.height);
-
 				var b2Top = b2.position.y;
-				var b2Bottom = b2.position.y - (-b2.size.height);
-				if (b1.type === "tank" && (b2.type === "tank" || b2.type === "boundary")) { 
+				var b2Bottom = b2.position.y + b2.size.height;
 
-					// if(b1.type === "tank" && b1.color === "red" && b1.tankNumber === 1 && b2.type === "tank" && b2.color === "red" && b2.tankNumber === 0) {console.log(b1.positionStep.x, b2.position.x + b2.size.width );}
-					
-
-					if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
-						if (this.color === "purple" && this.tankNumber === 1) {
-							okToMoveX = false;
-							okToMoveY = false;
-						}
-					}
-
-					if (b1Right > this.gameState.dimensions.width || b1Left < 0) {
-						okToMoveX = false;
-					}
-
-					if (b1Bottom > this.gameState.dimensions.height || b1Top < 0) {
-						okToMoveY = false;
-					}
-
+				if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
+					okToMoveX = false;
+					okToMoveY = false;
+					break;
 				}
-				if (b1.type === "bullet" && b2.type === "tank") {
-					if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
-						if (b1.isFriendly(b2) && this.options.friendlyFireSafe) {
-							b1.die();
-						} else {
-							b1.die();
-							b2.die();
-						}
-					}
+				if (b1Right > this.gameState.dimensions.width || b1Left < 0) {
+					okToMoveX = false;
 				}
-
-
-				if (b1.type === "bullet") {
-
-					//if bullet left arena
-					if (b1Right > this.gameState.dimensions.width || b1Left < 0) {
-						b1.die();
-					}
-					if (b1Bottom > this.gameState.dimensions.height || b1Top < 0) {
-						b1.die();
-					}
+				if (b1Bottom > this.gameState.dimensions.height || b1Top < 0) {
+					okToMoveY = false;
 				}
-				//flag
-
 			}
+			j=this.gameState.boundaries.length;
+			while((j-=1) >= 0) {
+				b2 = this.gameState.boundaries[j];
+				
+				b2Right = b2.position.x + b2.size.width;
+				b2Left = b2.position.x;
 
+				b2Top = b2.position.y;
+				b2Bottom = b2.position.y + b2.size.height;
+
+				if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
+					okToMoveX = false;
+					okToMoveY = false;
+					break;
+				}
+			}
 			if (okToMoveX) {
 				b1.moveX();
 			}
@@ -135,10 +136,121 @@ Game.prototype = {
 			}
 		}
 
-		//filter out dead bullets
-		this.gameState.bodies = this.gameState.bodies.filter(function(body) {
-			return (body.type !== "bullet") || !body.dead;
-		});
+		if(this.gameState.bullets.length > 0) {
+			i = this.gameState.bullets.length;
+			while((i-=1) >= 0) {
+				b1 = this.gameState.bullets[i];
+				b1.calculate();
+				j = this.gameState.tanks.length;
+				while((j-=1) >= 0) {
+					b2 = this.gameState.tanks[j];
+					b1Right = b1.positionStep.x + b1.size.width;
+					b1Left = b1.positionStep.x;
+					
+					b1Top = b1.positionStep.y;
+					b1Bottom = b1.positionStep.y + b1.size.height;
+
+					b2Right = b2.position.x + b2.size.width;
+					b2Left = b2.position.x;
+
+					b2Top = b2.position.y;
+					b2Bottom = b2.position.y + b2.size.height;
+
+					if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
+						b1.die();
+						b2.die();
+						break;
+					}
+				}
+				b1.moveX();
+				b1.moveY();
+			}
+			//filter out dead bullets
+			this.gameState.bullets = this.gameState.bullets.filter(function(bullet) {
+				return !bullet.dead;
+			});
+		}
+		
+
+
+
+		// var b1, b2, i = this.gameState.bodies.length-1, j;
+		// while(i-=1) { 
+		// 	var okToMoveX = true, okToMoveY = true; //reset
+		// 	b1 = this.gameState.bodies[i];
+		// 	b1.calculate();
+		// 	j = i;
+		// 	while(j-=1) {
+		// 		b2 = this.gameState.bodies[j];
+		// 		if (b1 === b2) {continue;}
+		// 		var b1Right = b1.positionStep.x + b1.size.width;
+		// 		var b1Left = b1.positionStep.x;
+				
+		// 		var b2Right = b2.position.x + b2.size.width;
+		// 		var b2Left = b2.position.x;
+
+		// 		var b1Top = b1.positionStep.y;
+		// 		var b1Bottom = b1.positionStep.y + b1.size.height;
+
+		// 		var b2Top = b2.position.y;
+		// 		var b2Bottom = b2.position.y + b2.size.height;
+		// 		if (b1.type === "tank" && (b2.type === "tank" || b2.type === "boundary")) {
+
+		// 			// if(b1.type === "tank" && b1.color === "red" && b1.tankNumber === 1 && b2.type === "tank" && b2.color === "red" && b2.tankNumber === 0) {console.log(b1.positionStep.x, b2.position.x + b2.size.width );}
+					
+
+		// 			if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
+		// 				okToMoveX = false;
+		// 				okToMoveY = false;
+		// 			}
+
+		// 			if (b1Right > this.gameState.dimensions.width || b1Left < 0) {
+		// 				okToMoveX = false;
+		// 			}
+
+		// 			if (b1Bottom > this.gameState.dimensions.height || b1Top < 0) {
+		// 				okToMoveY = false;
+		// 			}
+
+		// 		}
+		// 		if (b1.type === "bullet" && b2.type === "tank") {
+		// 			if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
+		// 				if (b1.isFriendly(b2) && this.options.friendlyFireSafe) {
+		// 					b1.die();
+		// 				} else {
+		// 					b1.die();
+		// 					b2.die();
+		// 				}
+		// 			}
+		// 		}
+
+
+		// 		if (b1.type === "bullet") {
+
+		// 			//if bullet left arena
+		// 			if (b1Right > this.gameState.dimensions.width || b1Left < 0) {
+		// 				b1.die();
+		// 			}
+		// 			if (b1Bottom > this.gameState.dimensions.height || b1Top < 0) {
+		// 				b1.die();
+		// 			}
+		// 		}
+		// 		//flag
+
+		// 	}
+
+		// 	if (okToMoveX) {
+		// 		b1.moveX();
+		// 	}
+		// 	if (okToMoveY) {
+		// 		b1.moveY();
+		// 	}
+		// }
+
+		// //filter out dead bullets
+		// this.gameState.bodies = this.gameState.bodies.filter(function(body) {
+		// 	return (body.type !== "bullet") || !body.dead;
+		// });
 
 
 
@@ -159,17 +271,31 @@ Game.prototype = {
 	createBodies: function() {
 		for (var i = 0; i < this.Players.length; i++) {
 			for (var j = 0; j < this.Players[i].tanks.length; j++) {
-				this.gameState.bodies.push(this.Players[i].tanks[j]);
+				this.gameState.tanks.push(this.Players[i].tanks[j]);
 			}
 		}
 		for (var k = 0; k < this.map.boundaries.length; k++) {
-			this.gameState.bodies.push(new Boundary(this.map.boundaries[k]));
+			this.gameState.boundaries.push(new Boundary(this.map.boundaries[k]));
 		}
 		//create flags
 	},
 	createConnections: function () {
 		for (var j = 0; j < this.Players.length; j++) {
-			this.connections.push(new Connection(this.Players[j], this));
+			var ls = process.spawn('node', ['connection.js', {player: this.Players[j], game: this} ]);
+
+			ls.stdout.on('data', function (data) {
+			  console.log('stdout: ' + data);
+			});
+			
+			ls.stderr.on('data', function (data) {
+			  console.log('stderr: ' + data);
+			});
+			
+			ls.on('close', function (code) {
+			  console.log('child process exited with code ' + code);
+			});
+
+			this.connections.push(ls);
 		}
 
 	},
@@ -203,7 +329,7 @@ Game.prototype = {
 		});
 	},
 	addBullet: function(bullet) {
-		this.gameState.bodies.push(bullet);
+		this.gameState.bullets.push(bullet);
 	}
 
 };
