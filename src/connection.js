@@ -70,11 +70,6 @@ var Connection = function(player, game) {
 			socket.emit("returnDynamicState", self.dynamicState);
 		});
 			
-			nw.on('exit', function (code) {
-			   console.log('Child process exited with exit code '+code);
-			});
-
-
 		
 
 		socket.on("getStaticData", function() { //add  && b.type !== "boundary"

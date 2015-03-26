@@ -1,6 +1,6 @@
-var heapdump = require('heapdump');
 var process = require("child_process");
 
+var Connection = require('./connection');
 var Player = require('./player');
 var Boundary = require('./boundary');
 var globals = require('../index');
@@ -53,15 +53,15 @@ var Game = function(map, options) {
 
 	//this may be unnecesary
 	var intervalId = startTheLoop();
-	setInterval(function() {
-		if (process.memoryUsage().heapUsed > 30000000) {
-			console.log("heap used: " + process.memoryUsage().heapUsed + ". pausing");
-			clearInterval(intervalId);
-			setTimeout(function() {
-				intervalId = startTheLoop();
-			}, 1000);
-		}
-	}, 3000);
+	// setInterval(function() {
+	// 	if (process.memoryUsage().heapUsed > 30000000) {
+	// 		console.log("heap used: " + process.memoryUsage().heapUsed + ". pausing");
+	// 		clearInterval(intervalId);
+	// 		setTimeout(function() {
+	// 			intervalId = startTheLoop();
+	// 		}, 1000);
+	// 	}
+	// }, 3000);
 
 	// setInterval(function () {
 	//   heapdump.writeSnapshot()
@@ -281,21 +281,7 @@ Game.prototype = {
 	},
 	createConnections: function () {
 		for (var j = 0; j < this.Players.length; j++) {
-			var ls = process.spawn('node', ['connection.js', {player: this.Players[j], game: this} ]);
-
-			ls.stdout.on('data', function (data) {
-			  console.log('stdout: ' + data);
-			});
-			
-			ls.stderr.on('data', function (data) {
-			  console.log('stderr: ' + data);
-			});
-			
-			ls.on('close', function (code) {
-			  console.log('child process exited with code ' + code);
-			});
-
-			this.connections.push(ls);
+			this.connections.push(new Connection(this.Players[j], this));
 		}
 
 	},
