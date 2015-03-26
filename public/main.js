@@ -39,13 +39,14 @@ window.onload = function() {
     		return;
     	}
     	connected = true;
+
+    	dimensions = initData.dimensions;
     	
-        dimensions = initData.dimensions;
         screen.canvas.width = dimensions.width;
         screen.canvas.height = dimensions.height;
 
-        backgroundCanvas.canvas.width = screen.canvas.width
-        backgroundCanvas.canvas.height = screen.canvas.height
+        backgroundCanvas.canvas.width = dimensions.width;
+        backgroundCanvas.canvas.height = dimensions.height;
 
         backgroundCanvas.rect(0, 0, dimensions.width, dimensions.height);
 	    backgroundCanvas.fillStyle = backgroundPattern;
@@ -58,9 +59,8 @@ window.onload = function() {
 
         var buttonWrapper = $("#button-wrapper");
         buttonWrapper.empty();
-
-        for (var i = 0; i < initData.availableConnections.length; i++) {
-        	var button = $("<span class='player-button' data-connection-namespace='" + initData.availableConnections[i].namespace + "' style='background-color:" + initData.availableConnections[i].playerColor + " '>Player Number " + initData.availableConnections[i].playerNumber + "</span>").click(function() {
+        for (var i = 0; i < initData.players.length; i++) {
+        	var button = $("<span class='player-button' style='background-color:" + initData.players[i].playerColor + " '>Player Number " + initData.players[i].playerNumber + "</span>").click(function() {
         		var playerNumber = $(this).data("connection-namespace");
         		//TODO: connect to namespace
         		//TODO: add manual controls
@@ -76,7 +76,7 @@ window.onload = function() {
 
 
 
-    socket.on('refresh', function (gameState) {
+    socket.on('refresh', function (gameState) { //console.log(gameState);
         screen.clearRect(0, 0, dimensions.width, dimensions.height);
 
         // screen.drawImage(backgroundImg, 0, 0, dimensions.width, dimensions.height);

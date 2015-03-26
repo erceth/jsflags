@@ -4,8 +4,8 @@
 	"boundaries": [
 	{
 		"type": "boundary",
-		"position": {"x": 900, "y": 900},
-		"size": {"height": 1, "width": 1}
+		"position": {"x": 350, "y": 350},
+		"size": {"height": 200, "width": 200}
 	}
 	],
 	"bases": [{

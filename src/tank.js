@@ -1,35 +1,33 @@
+var globals = require('../index');
+var options = globals.options;
 var Bullet = require("./bullet");
 
-var Tank = function(playerData, tankNumber, options, game) {
+var Tank = function(base, color, tankNumber) {
 	this.type = "tank"
-	this.playerNumber = playerData.playerNumber;
-	this.color = playerData.color;
+	this.color = color;
 	this.size = {height: 15, width: 15};
 	this.tankNumber = tankNumber;
-	this.options = options;
-	this.homeBase = {
-		x: playerData.position.x,
-		y: playerData.position.y,
-		height: playerData.size.height,
-		width: playerData.size.width
-	}
-	this.setHomePosition();
-	this.setStartingAngle();
-	this.setStartingSpeed();
+	this.base = {
+		position: base.position,
+		size: base.size
+	};
 	this.positionStep = {x: 0, y: 0};
 	this.radians;
 	this.dead = false;
+
+	this.setHomePosition();
+	this.setStartingAngle();
+	this.setStartingSpeed();
+	
 	//add game's addBullet function to oneself
-	this.addBulletToGame = function(bullet) {
-		game.addBullet(bullet); 
-	};
+	
 };
 
 Tank.prototype = {
 	setHomePosition: function() {
 		this.position = {
-			x: this.homeBase.x - (this.homeBase.width / 2) + (this.size.width * this.tankNumber), 
-			y: this.homeBase.y - 1  // TODO: make rows - (playerData.size.height/ 2) + (this.size.height* )
+			x: this.base.position.x - (this.base.size.width / 2) + (this.size.width * this.tankNumber), 
+			y: this.base.position.y - 1  // TODO: make rows - (playerData.size.height/ 2) + (this.size.height* )
 		};
 	},
 	setStartingAngle: function() {
@@ -48,11 +46,11 @@ Tank.prototype = {
 		this.angle = this.angle % 360;  //prevent angle overflow and keep it positive
 
 		//keep speed within max speed
-		if (this.speed > this.options.maxTankSpeed) {
-			this.speed = this.options.maxTankSpeed;
+		if (this.speed > options.maxTankSpeed) {
+			this.speed = options.maxTankSpeed;
 		}
-		if (this.speed < -this.options.maxTankSpeed) {
-			this.speed = -this.options.maxTankSpeed;
+		if (this.speed < -options.maxTankSpeed) {
+			this.speed = -options.maxTankSpeed;
 		}
 
 		this.radians = this.angle * (Math.PI/180);
@@ -78,7 +76,7 @@ Tank.prototype = {
 		this.addBulletToGame(new Bullet({
 			color: this.color, 
 			radians: this.radians, 
-			options: this.options, 
+			options: options, 
 			position: this.position,
 			tankSize: this.size
 		}));
@@ -91,11 +89,9 @@ Tank.prototype = {
 		var self = this;
 		setTimeout(function() {
 			self.dead = false;
-		}, this.options.respawnTime);
-
-		//set position to home
-		//set speed and angleVel to 0
+		}, options.respawnTime);
 	}
+	//one prototype lives in game.js
 };
 
 

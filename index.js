@@ -46,10 +46,12 @@ var options = {
 	respawnTime: 5000
 };
 
+module.exports.options = options;
+
 
 //create new game
 var Game = require('./src/game');
-var g = new Game("maps/squares.json", options);
+var g = new Game("maps/squares.json");
 module.exports.Game = g;
 
 

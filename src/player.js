@@ -1,24 +1,43 @@
+var globals = require('../index');
+var options = globals.options;
+var io = globals.io;
 var Tank = require('./tank');
 
-var Player = function(playerData) {
-	this.playerNumber = playerData.base.playerNumber;
-	this.playerColor = playerData.base.color;
+/* Player AND Connection */
+var Player = function(base) {
+	this.playerNumber = base.playerNumber;
+	this.namespace = "player" + this.playerNumber;
+	this.connection = io.of(this.namespace);
+	this.playerColor = base.color;
 	this.tanks = [];
-	this.base = playerData.base;
+	this.base = {
+		position: base.position,
+		size: base.size
+	};
 
-	for (var i = 0; i < playerData.options.numOfTanks; i++) {
-		this.tanks.push(new Tank(playerData.base, i, playerData.options, playerData.game));
+	var self = this;
+
+	for (var i = 0; i < options.numOfTanks; i++) {
+		this.tanks.push(new Tank(this.base, this.playerColor, i));
 	}
+
+	//connection part
+	this.connection.on("connect", function(socket) {
+		console.log(self.playerColor + " connected");
+		socket.on("disconnect", function() {
+			console.log("goodbye y'all");
+		});
+		socket.on("move", function(orders) {
+			self.moveTanks(orders);
+		});
+		socket.on("fire", function(orders) {
+			self.fireTanks(orders);	
+		});
+	});
 
 };
 
 Player.prototype = {
-	getPlayerColor: function() {
-		return this.playerColor;
-	},
-	getPlayerNumber: function() {
-		return this.playerNumber;
-	},
 	moveTanks: function(orders) {
 		for (var i = 0; i < orders.tankNumbers.length; i++) {
 			var tankNumber = parseInt(orders.tankNumbers[i], 10);
