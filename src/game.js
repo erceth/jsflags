@@ -2,6 +2,7 @@
 
 var Player = require('./player');
 var Boundary = require('./boundary');
+var Flag = require('./flag');
 var globals = require('../index');
 var Tank = require('./tank');
 
@@ -22,7 +23,8 @@ var Game = function(map) {
 	this.gameState = {
 		tanks:[],
 		boundaries:[],
-		bullets:[]
+		bullets:[],
+		flags: []
 	};
 	this.map = JSON.parse(fs.readFileSync(map, 'utf8')); //get map
 
@@ -67,7 +69,7 @@ var Game = function(map) {
 
 Game.prototype = {
 	update: function() {
-		//loops tanks
+		//TANKS
 		var b1, b2, i = this.gameState.tanks.length;
 		while((i-=1) >= 0) {
 			var okToMoveX = true, okToMoveY = true;
@@ -123,8 +125,31 @@ Game.prototype = {
 			if (okToMoveY) {
 				b1.moveY();
 			}
-		}
+			j = this.gameState.flags.length;
+			while((j-=1) >= 0) {
+				b2 = this.gameState.flags[j];
+				if (b2.hasTank()) { continue; }
+				
+				b2Right = b2.position.x + b2.size.width;
+				b2Left = b2.position.x;
 
+				b2Top = b2.position.y;
+				b2Bottom = b2.position.y + b2.size.height;
+
+				if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) {
+					if (b1.color !== b2.color ) {
+						b2.followThisTank(b1);
+					} else if (b1.color === b2.color) {
+						b2.die(); //reset the flag
+					}
+				}
+
+
+
+
+			}
+		}
+		//BULLETS
 		if(this.gameState.bullets.length > 0) {
 			i = this.gameState.bullets.length;
 			while((i-=1) >= 0) {
@@ -145,7 +170,8 @@ Game.prototype = {
 					b2Top = b2.position.y;
 					b2Bottom = b2.position.y + b2.size.height;
 
-					if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
+					if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) {
+						console.log(b1.color, b1.position, b2.color, b2.position);
 						b1.die();
 						b2.die();
 						break;
@@ -179,6 +205,11 @@ Game.prototype = {
 				return !bullet.dead;
 			});
 		}
+		//FLAGS
+		i = this.gameState.flags.length;
+		while((i-=1) >= 0) {
+			this.gameState.flags[i].update();
+		}
 	},
 	createBodies: function() {
 		for (var i = 0; i < this.Players.length; i++) {
@@ -186,11 +217,12 @@ Game.prototype = {
 				this.gameState.tanks.push(this.Players[i].tanks[j]);
 				//TODO: add bullet function
 			}
+
+			this.gameState.flags.push(new Flag(this.Players[i].playerColor, this.Players[i].base.position ));
 		}
 		for (var k = 0; k < this.map.boundaries.length; k++) {
 			this.gameState.boundaries.push(new Boundary(this.map.boundaries[k]));
 		}
-		//create flags
 	}
 
 };

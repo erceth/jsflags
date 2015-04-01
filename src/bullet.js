@@ -8,8 +8,8 @@ var Bullet = function(bulletData) {
 
 	//start out in front of tank
 	this.position = {
-		x: bulletData.position.x + bulletData.tankSize.width / 2 + (Math.cos(this.radians) * bulletData.tankSize.width / 2),
-		y: bulletData.position.y + bulletData.tankSize.height / 2 + (Math.sin(this.radians) * bulletData.tankSize.height / 2)
+		x: (bulletData.position.x + bulletData.tankSize.width / 2) + (Math.cos(this.radians) * bulletData.tankSize.width),
+		y: (bulletData.position.y + bulletData.tankSize.height / 2) + (Math.sin(this.radians) * bulletData.tankSize.height)
 	};
 	// this.position = {
 	// 	x: bulletData.position.x + (round(Math.cos(this.radians), 4) >= 0) ? bulletData.tankSize.x / 2 : -(bulletData.tankRadius),

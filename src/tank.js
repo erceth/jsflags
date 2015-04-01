@@ -83,12 +83,14 @@ Tank.prototype = {
 	},
 	die: function() {
 		this.dead = true;
-		this.setHomePosition();
-		this.setStartingSpeed();
-		this.setStartingAngle();
+		this.position.x = -50;
+		this.position.y = -50;
 		var self = this;
 		setTimeout(function() {
 			self.dead = false;
+			self.setHomePosition();
+			self.setStartingSpeed();
+			self.setStartingAngle();
 		}, options.respawnTime);
 	}
 	//one prototype lives in game.js

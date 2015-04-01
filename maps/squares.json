@@ -4,29 +4,29 @@
 	"boundaries": [
 	{
 		"type": "boundary",
-		"position": {"x": 350, "y": 350},
-		"size": {"height": 200, "width": 200}
+		"position": {"x": 0, "y": 0},
+		"size": {"height": 1, "width": 1}
 	}
 	],
 	"bases": [{
 		"playerNumber": 1,
 		"color": "red",
-		"position": {"x": 400, "y": 50},
-		"size": {"height": 50, "width": 50}
+		"position": {"x": 450, "y": 100},
+		"size": {"height": 100, "width": 100}
 	}, {
 		"playerNumber": 2,
 		"color": "blue",
-		"position": {"x": 50, "y": 400},
-		"size": {"height": 50, "width": 50}
+		"position": {"x": 100, "y": 450},
+		"size": {"height": 100, "width": 100}
 	}, {
 		"playerNumber": 3,
 		"color": "green",
 		"position": {"x": 800, "y": 450},
-		"size": {"height": 50, "width": 50}
+		"size": {"height": 100, "width": 100}
 	}, {
 		"playerNumber": 4,
 		"color": "purple",
 		"position": {"x": 450, "y": 800},
-		"size": {"height": 50, "width": 50}
+		"size": {"height": 100, "width": 100}
 	}]
 }

@@ -41,7 +41,7 @@ Player.prototype = {
 	moveTanks: function(orders) {
 		for (var i = 0; i < orders.tankNumbers.length; i++) {
 			var tankNumber = parseInt(orders.tankNumbers[i], 10);
-			if (tankNumber || tankNumber === 0 && tankNumber < this.tanks.length && tankNumber >= 0) {
+			if ((tankNumber || tankNumber === 0) && (tankNumber < this.tanks.length && tankNumber >= 0)) {
 				this.tanks[tankNumber].moveTanks({speed: orders.speed, angleVel: orders.angleVel});
 			}
 		}
@@ -49,7 +49,7 @@ Player.prototype = {
 	fireTanks: function(orders) {
 		for (var i = 0; i < orders.tankNumbers.length; i++) {
 			var tankNumber = parseInt(orders.tankNumbers[i], 10);
-			if (tankNumber || tankNumber === 0 && tankNumber < this.tanks.length && tankNumber >= 0) {
+			if ((tankNumber || tankNumber === 0) && (tankNumber < this.tanks.length && tankNumber >= 0)){
 				this.tanks[tankNumber].fireTanks({speed: orders.speed, angleVel: orders.angleVel});
 			}
 		}

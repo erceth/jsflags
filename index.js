@@ -32,18 +32,46 @@ app.get('/img/green_tank.png', function(req, res) {
 app.get('/img/purple_tank.png', function(req, res) {
     res.sendFile(__dirname + "/img/purple_tank.png");
 });
+
+app.get('/img/red_basetop.png', function(req, res) {
+    res.sendFile(__dirname + "/img/red_basetop.png");
+});
+app.get('/img/blue_basetop.png', function(req, res) {
+    res.sendFile(__dirname + "/img/blue_basetop.png");
+});
+app.get('/img/green_basetop.png', function(req, res) {
+    res.sendFile(__dirname + "/img/green_basetop.png");
+});
+app.get('/img/purple_basetop.png', function(req, res) {
+    res.sendFile(__dirname + "/img/purple_basetop.png");
+});
+
+app.get('/img/red_flag.png', function(req, res) {
+    res.sendFile(__dirname + "/img/red_flag.png");
+});
+app.get('/img/blue_flag.png', function(req, res) {
+    res.sendFile(__dirname + "/img/blue_flag.png");
+});
+app.get('/img/green_flag.png', function(req, res) {
+    res.sendFile(__dirname + "/img/green_flag.png");
+});
+app.get('/img/purple_flag.png', function(req, res) {
+    res.sendFile(__dirname + "/img/purple_flag.png");
+});
+
 app.get('/img/grass.png', function(req, res) {
     res.sendFile(__dirname + "/img/grass.png");
 });
 
 
 var options = {
-	numOfTanks: 4,
+	numOfTanks: 1,
 	maxTankSpeed: 1,
 	friendlyFireSafe: true,
 	port: 8001,
 	maxBulletSpeed: 5,
-	respawnTime: 5000
+	respawnTime: 5000,
+	flagRepawnWait: 5000
 };
 
 module.exports.options = options;

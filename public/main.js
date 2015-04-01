@@ -15,6 +15,20 @@ window.onload = function() {
     	purple:new Image(15,15)
     };
 
+    var baseImg = {
+    	red: new Image(100,100),
+    	blue: new Image(100,100),
+    	green: new Image(100,100),
+    	purple: new Image(100,100)
+    };
+
+    var flagImg = {
+    	red: new Image(20,20),
+    	blue: new Image(20,20),
+    	green: new Image(20,20),
+    	purple: new Image(20,20)
+    };
+
     var wall = new Image();
     wall.src = "data:image/png;base64,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";
     var wallPattern = screen.createPattern(wall, "repeat");
@@ -34,6 +48,16 @@ window.onload = function() {
     tankImg.green.src = "img/green_tank.png";
     tankImg.purple.src = "img/purple_tank.png";
 
+    baseImg.red.src = "img/red_basetop.png";
+    baseImg.blue.src = "img/blue_basetop.png";
+    baseImg.green.src = "img/green_basetop.png";
+    baseImg.purple.src = "img/purple_basetop.png";
+
+    flagImg.red.src = "img/red_flag.png";
+    flagImg.blue.src = "img/blue_flag.png";
+    flagImg.green.src = "img/green_flag.png";
+    flagImg.purple.src = "img/purple_flag.png";
+
     socket.on("init", function(initData) {
     	if (connected) {
     		return;
@@ -51,6 +75,15 @@ window.onload = function() {
         backgroundCanvas.rect(0, 0, dimensions.width, dimensions.height);
 	    backgroundCanvas.fillStyle = backgroundPattern;
 	    backgroundCanvas.fill();
+
+	    // initData.players[0].base.position
+	    // .size
+
+	    for (var i = 0, max = initData.players.length; i < max; i++) {
+	    	var b = initData.players[i].base;
+	    	var img = baseImg[initData.players[i].playerColor];
+	    	backgroundCanvas.drawImage(img, b.position.x - (b.size.width / 2), b.position.y - (b.size.height / 2), b.size.height, b.size.width);
+	    }
 
 	    //TODO: get boundaries and draw them on the background canvas
 	    // screen.rect(o.position.x, o.position.y, o.size.width, o.size.height);
@@ -107,6 +140,16 @@ window.onload = function() {
         		color = (o.color) ? o.color : "black";
         		screen.fillStyle = color;
         		screen.fillRect(o.position.x, o.position.y, o.size.height, o.size.width);
+        	}
+        }
+        if (gameState.flags.length > 0) {
+        	i = gameState.flags.length;
+        	while ((i-=1) >= 0) {
+        		o = gameState.flags[i];
+        		var f = flagImg[o.color];
+        		f.height = o.size.height;
+	            f.width = o.size.width;
+	            screen.drawImage(f, o.position.x - (o.size.width / 2), o.position.y - (o.size.height / 2), o.size.height, o.size.width);
         	}
         }
         
