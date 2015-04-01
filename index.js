@@ -65,13 +65,13 @@ app.get('/img/grass.png', function(req, res) {
 
 
 var options = {
-	numOfTanks: 1,
+	numOfTanks: 4,
 	maxTankSpeed: 1,
 	friendlyFireSafe: true,
 	port: 8001,
 	maxBulletSpeed: 5,
 	respawnTime: 5000,
-	flagRepawnWait: 5000
+	flagRepawnWait: 10000
 };
 
 module.exports.options = options;

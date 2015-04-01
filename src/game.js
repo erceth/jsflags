@@ -125,29 +125,6 @@ Game.prototype = {
 			if (okToMoveY) {
 				b1.moveY();
 			}
-			j = this.gameState.flags.length;
-			while((j-=1) >= 0) {
-				b2 = this.gameState.flags[j];
-				if (b2.hasTank()) { continue; }
-				
-				b2Right = b2.position.x + b2.size.width;
-				b2Left = b2.position.x;
-
-				b2Top = b2.position.y;
-				b2Bottom = b2.position.y + b2.size.height;
-
-				if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) {
-					if (b1.color !== b2.color ) {
-						b2.followThisTank(b1);
-					} else if (b1.color === b2.color) {
-						b2.die(); //reset the flag
-					}
-				}
-
-
-
-
-			}
 		}
 		//BULLETS
 		if(this.gameState.bullets.length > 0) {
@@ -171,7 +148,6 @@ Game.prototype = {
 					b2Bottom = b2.position.y + b2.size.height;
 
 					if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) {
-						console.log(b1.color, b1.position, b2.color, b2.position);
 						b1.die();
 						b2.die();
 						break;
@@ -205,11 +181,101 @@ Game.prototype = {
 				return !bullet.dead;
 			});
 		}
-		//FLAGS
+		var tank, flag;
 		i = this.gameState.flags.length;
-		while((i-=1) >= 0) {
-			this.gameState.flags[i].update();
+		while ((i-=1) >= 0) {
+			flag = this.gameState.flags[i];
+			j = this.gameState.tanks.length;
+			while ((j-=1) >= 0) {
+				tank = this.gameState.tanks[j];
+				if (tank.dead) {continue;}
+				var flagRight = flag.position.x + flag.size.width;
+				var flagLeft = flag.position.x;
+				
+				var flagTop = flag.position.y;
+				var flagBottom = flag.position.y + flag.size.height;
+
+				var tankRight = tank.position.x + tank.size.width;
+				var tankLeft = tank.position.x;
+
+				var tankTop = tank.position.y;
+				var tankBottom = tank.position.y + tank.size.height;
+				if (! (flagRight < tankLeft || flagLeft > tankRight || flagTop > tankBottom || flagBottom < tankTop) ) { 
+					if (tank.color !== flag.color) {
+						flag.followThisTank(tank);
+					} else {
+						flag.die();
+					}
+					break;
+				}
+			}
+			flag.update();
+
+			// flag = this.gameState.flags[i];
+			// flag.update();
+			// if (flag.hasTank()) {
+			// 	continue;
+			// }
+			// j = this.gameState.tanks.length;
+			// while ((j-=1) >= 0) {
+			// 	tank = this.gameState.tanks[j];
+			// 	b1Right = flag.position.x + flag.size.width;
+			// 	b1Left = flag.position.x;
+				
+			// 	b1Top = flag.position.y;
+			// 	b1Bottom = flag.position.y + flag.size.height;
+
+			// 	b2Right = tank.position.x + tank.size.width;
+			// 	b2Left = tank.position.x;
+
+			// 	b2Top = tank.position.y;
+			// 	b2Bottom = tank.position.y + tank.size.height;
+
+			// 	//console.log(b1Right, b1Left, b1Top, b1Bottom, b2Right, b2Left, b2Top, b2Bottom);
+
+			// 	if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
+			// 		if (flag.color === tank.color) {
+			// 			flag.die();
+			// 		} else {
+			// 			flag.followThisTank(tank);
+			// 		}
+			// 	}
+			// }
+
 		}
+
+
+		//FLAGS
+		// i = this.gameState.flags.length;
+		// while((i-=1) >= 0) {
+		// 	b1 = this.gameState.flags[i];
+		// 	b1.update();
+		// 	if (b1.hasTank()) {continue;}
+		// 	j = this.gameState.tanks.length;
+		// 	while((j-=1) >= 0) {
+		// 		b1Right = b1.position.x + b1.size.width;
+		// 		b1Left = b1.position.x;
+
+		// 		b1Top = b1.position.y;
+		// 		b1Bottom = b1.position.y + b1.size.height;
+
+
+		// 		b2 = this.gameState.tanks[j];
+		// 		b2Right = b2.positionStep.x + b2.size.width;
+		// 		b2Left = b2.positionStep.x;
+				
+		// 		b2Top = b2.positionStep.y;
+		// 		b2Bottom = b2.positionStep.y + b2.size.height;
+
+		// 		if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) {
+		// 			if (b1.color !== b2.color ) {
+		// 				b1.followThisTank(b2);
+		// 			} else if (b1.color === b2.color) { console.log("reset");
+		// 				b1.die(); //reset the flag
+		// 			}
+		// 		}
+		// 	}
+		// }
 	},
 	createBodies: function() {
 		for (var i = 0; i < this.Players.length; i++) {

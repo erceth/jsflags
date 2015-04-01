@@ -83,8 +83,8 @@ Tank.prototype = {
 	},
 	die: function() {
 		this.dead = true;
-		this.position.x = -50;
-		this.position.y = -50;
+		this.position.x = 0;
+		this.position.y = 0;
 		var self = this;
 		setTimeout(function() {
 			self.dead = false;
