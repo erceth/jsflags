@@ -68,7 +68,7 @@ var options = {
 	numOfTanks: 4,
 	maxTankSpeed: 1,
 	friendlyFireSafe: true,
-	port: 8001,
+	port: 8003,
 	maxBulletSpeed: 5,
 	respawnTime: 5000,
 	flagRepawnWait: 10000
