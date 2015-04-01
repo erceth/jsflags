@@ -43,6 +43,7 @@ window.onload = function() {
 
     //backgroundPattern = screen.createPattern(tankImg.red, 'repeat');
 
+    //base64 all these
     tankImg.red.src = "img/red_tank.png";
     tankImg.blue.src = "img/blue_tank.png";
     tankImg.green.src = "img/green_tank.png";

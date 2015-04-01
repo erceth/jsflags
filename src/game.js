@@ -15,7 +15,7 @@ var options = globals.options;
 
 var Game = function(map) {
 	http.listen(options.port, function() {
-	    console.log('listening on *:8001');
+	    console.log('listening on *:' + options.port);
 	});
 
 	//variables
