@@ -75,7 +75,7 @@ Game.prototype = {
 			var okToMoveX = true, okToMoveY = true;
 			b1 = this.gameState.tanks[i];
 			b1.calculate();
-			j = i;
+			j = this.gameState.tanks.length;
 			while((j-=1) >= 0) {
 				if (i===j) {continue;}
 				b2 = this.gameState.tanks[j];
