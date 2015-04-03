@@ -14,6 +14,7 @@ var Tank = function(base, color, tankNumber) {
 	this.positionStep = {x: 0, y: 0};
 	this.radians;
 	this.dead = false;
+	this.hasFlag = false;
 
 	this.setHomePosition();
 	this.setStartingAngle();
@@ -85,6 +86,7 @@ Tank.prototype = {
 		this.dead = true;
 		this.position.x = 0;
 		this.position.y = 0;
+		this.hasFlag = false;
 		var self = this;
 		setTimeout(function() {
 			self.dead = false;
@@ -92,6 +94,9 @@ Tank.prototype = {
 			self.setStartingSpeed();
 			self.setStartingAngle();
 		}, options.respawnTime);
+	},
+	carryFlag: function(flag) {
+		this.hasFlag = flag.color;
 	}
 	//one prototype lives in game.js
 };

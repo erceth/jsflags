@@ -12,7 +12,7 @@ var Flag = function(color, position) {
 
 Flag.prototype = {
 
-	update:function() {
+	update: function() {
 		if (this.tankToFollow && !this.tankToFollow.dead) {
 			this.position = {
 				x: this.tankToFollow.position.x,
@@ -32,6 +32,7 @@ Flag.prototype = {
 			x: this.originalPosition.x,
 			y: this.originalPosition.y
 		}
+		this.tankToFollow = null;
 	},
 	slowDeath: function() {
 		var self = this;

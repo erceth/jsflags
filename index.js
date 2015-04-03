@@ -64,6 +64,7 @@ app.get('/img/grass.png', function(req, res) {
 });
 
 
+//TODO allow these to be set by commandline args
 var options = {
 	numOfTanks: 4,
 	maxTankSpeed: 1,
@@ -71,7 +72,9 @@ var options = {
 	port: 8003,
 	maxBulletSpeed: 5,
 	respawnTime: 5000,
-	flagRepawnWait: 10000
+	flagRepawnWait: 10000,
+	pointsForCarry: 1,
+	pointsForCapture: 100
 };
 
 module.exports.options = options;

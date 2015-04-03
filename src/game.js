@@ -24,7 +24,8 @@ var Game = function(map) {
 		tanks:[],
 		boundaries:[],
 		bullets:[],
-		flags: []
+		flags: [],
+		score: {}
 	};
 	this.map = JSON.parse(fs.readFileSync(map, 'utf8')); //get map
 
@@ -50,13 +51,22 @@ var Game = function(map) {
 			});
 
 		}
-		io.emit("init", {dimensions: self.map.dimensions, players: modifiedPlayers, numOfTanks: options.numOfTanks });
+		io.emit("init", {dimensions: self.map.dimensions, players: modifiedPlayers, numOfTanks: options.numOfTanks, scoreboard: self.map.scoreboard });
 	});
 
 	setInterval(function () {
 		self.update();
 		io.emit("refresh", self.gameState);
 	}, 1000 / 60);  //denom is fps
+
+	setInterval(function() {
+
+		for (var i = 0, max = self.gameState.flags.length; i < max; i++) {
+			if (self.gameState.flags[i].tankToFollow) {
+				self.gameState.score[self.gameState.flags[i].tankToFollow.color].score += options.pointsForCarry;
+			}
+		}
+	}, 1000 / 1);
 
 
 	//a part of tank prototype
@@ -203,6 +213,7 @@ Game.prototype = {
 				if (! (flagRight < tankLeft || flagLeft > tankRight || flagTop > tankBottom || flagBottom < tankTop) ) { 
 					if (tank.color !== flag.color) {
 						flag.followThisTank(tank);
+						tank.carryFlag(flag);
 					} else {
 						flag.die();
 					}
@@ -211,38 +222,84 @@ Game.prototype = {
 			}
 			flag.update();
 
-			// flag = this.gameState.flags[i];
-			// flag.update();
-			// if (flag.hasTank()) {
-			// 	continue;
-			// }
-			// j = this.gameState.tanks.length;
-			// while ((j-=1) >= 0) {
-			// 	tank = this.gameState.tanks[j];
-			// 	b1Right = flag.position.x + flag.size.width;
-			// 	b1Left = flag.position.x;
+			// j = this.Players.length;
+			// while((j-=1) > 0) {
+			// 	base = this.Players[j].base;
+			// 	if (!flag.tankToFollow || !(flag.tankToFollow.color === base.playerColor)) { continue; } //tank returns to it's base
+
+			// 	flagRight = flag.position.x + flag.size.width;
+			// 	flagLeft = flag.position.x;
 				
-			// 	b1Top = flag.position.y;
-			// 	b1Bottom = flag.position.y + flag.size.height;
+			// 	flagTop = flag.position.y;
+			// 	flagBottom = flag.position.y + flag.size.height;
 
-			// 	b2Right = tank.position.x + tank.size.width;
-			// 	b2Left = tank.position.x;
+			// 	var baseRight = base.position.x + base.size.width;
+			// 	var baseLeft = base.position.x;
 
-			// 	b2Top = tank.position.y;
-			// 	b2Bottom = tank.position.y + tank.size.height;
+			// 	var baseTop = base.position.y;
+			// 	var baseBottom = base.position.y + base.size.height;
 
-			// 	//console.log(b1Right, b1Left, b1Top, b1Bottom, b2Right, b2Left, b2Top, b2Bottom);
-
-			// 	if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
-			// 		if (flag.color === tank.color) {
-			// 			flag.die();
-			// 		} else {
-			// 			flag.followThisTank(tank);
-			// 		}
+			// 	if (! (flagRight < baseLeft || flagLeft > baseRight || flagTop > baseBottom || flagBottom < baseTop) ) { 
+			// 		this.gameState.score[b1.tankToFollow.color] += options.pointsForCapture;
+			// 		flag.die();
 			// 	}
 			// }
 
 		}
+
+		//check if flag is returned to base
+		var flag, base;
+		i = this.gameState.flags.length;
+		while ((i-=1) >= 0) {
+			flag = this.gameState.flags[i];
+			j = this.Players.length;
+			while ((j-=1) >= 0) {
+				base = this.Players[j].base;
+				if (!flag.tankToFollow) { continue; }
+				if (!(flag.tankToFollow.color === this.Players[j].playerColor)) { continue; } //tank returns to it's base
+				flagRight = flag.position.x + flag.size.width;
+				flagLeft = flag.position.x;
+				
+				flagTop = flag.position.y;
+				flagBottom = flag.position.y + flag.size.height;
+
+				var baseRight = base.position.x + base.size.width;
+				var baseLeft = base.position.x;
+
+				var baseTop = base.position.y;
+				var baseBottom = base.position.y + base.size.height;
+
+				if (! (flagRight < baseLeft || flagLeft > baseRight || flagTop > baseBottom || flagBottom < baseTop) ) { 
+					this.gameState.score[flag.tankToFollow.color].score += options.pointsForCapture;
+					flag.die();
+				}
+
+			}
+		}
+
+
+		// j = this.Players.length;
+		// 	while((j-=1) > 0) {
+		// 		base = this.Players[j].base;
+		// 		if (!flag.tankToFollow || !(flag.tankToFollow.color === base.playerColor)) { continue; } //tank returns to it's base
+
+		// 		flagRight = flag.position.x + flag.size.width;
+		// 		flagLeft = flag.position.x;
+				
+		// 		flagTop = flag.position.y;
+		// 		flagBottom = flag.position.y + flag.size.height;
+
+		// 		var baseRight = base.position.x + base.size.width;
+		// 		var baseLeft = base.position.x;
+
+		// 		var baseTop = base.position.y;
+		// 		var baseBottom = base.position.y + base.size.height;
+
+		// 		if (! (flagRight < baseLeft || flagLeft > baseRight || flagTop > baseBottom || flagBottom < baseTop) ) { 
+		// 			this.gameState.score[b1.tankToFollow.color] += options.pointsForCapture;
+		// 			flag.die();
+		// 		}
+		// 	}
 
 
 		//FLAGS
@@ -285,6 +342,7 @@ Game.prototype = {
 			}
 
 			this.gameState.flags.push(new Flag(this.Players[i].playerColor, this.Players[i].base.position ));
+			this.gameState.score[this.Players[i].playerColor] = {color: this.Players[i].playerColor, score: 0};
 		}
 		for (var k = 0; k < this.map.boundaries.length; k++) {
 			this.gameState.boundaries.push(new Boundary(this.map.boundaries[k]));

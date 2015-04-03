@@ -28,5 +28,9 @@
 		"color": "purple",
 		"position": {"x": 450, "y": 800},
 		"size": {"height": 100, "width": 100}
-	}]
+	}],
+	"scoreboard": {
+		"position": {"x": 700, "y": 750},
+		"size": {"height": 100, "width": 150}
+	}
 }
