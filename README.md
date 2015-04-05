@@ -14,3 +14,5 @@ Robot AI tanks and game engine written 100% in nodeJS and javascript from scratc
 ## More info
 
 - This game is design to to be run on a local area network.  After you run JSFlags connect your AI to it and have fun.  
+
+![jsflag screenshot](https://dl.dropboxusercontent.com/u/49269350/jsflags.png "jsflag gameplay")
