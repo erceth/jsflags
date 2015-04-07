@@ -60,7 +60,11 @@ app.get('/img/purple_flag.png', function(req, res) {
 });
 
 app.get('/img/grass.png', function(req, res) {
-    res.sendFile(__dirname + "/img/grass.png");
+    res.sendFile(__dirname + "/img/grass(100x100).png");
+});
+
+app.get('/img/wall.png', function(req, res) {
+    res.sendFile(__dirname + "/img/wall.png");
 });
 
 
