@@ -19,7 +19,6 @@ canvas {
 	right: 0;
 
 	background: #000;
-	display: none; /* hide until manual control is finished */
 }
 
 #button-wrapper {
