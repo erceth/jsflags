@@ -9,7 +9,7 @@ function GameScreen() {
 	this.backgroundCanvas = document.getElementById("background");
     this.backgroundScreen = this.backgroundCanvas.getContext("2d");
 	this.socket = io();
-	this.dimensions = io();
+	this.dimensions = {};
 	this.scoreboard = {};
 	this.connected = false;
 	this.initData = null;
@@ -392,7 +392,10 @@ var Tank = function(tankNumber, color) {
 	this.speed = 0;
 	this.angleVel = 0;
 	
-	this.target = {x: 100, y: 100};
+	this.target = {
+		x: 100,
+		y: 100
+	};
 	this.hasATarget = false;
 
 };
@@ -407,47 +410,48 @@ Tank.prototype = {
 	setTarget: function(x, y) {
 		this.target.x = x;
 		this.target.y = y;
+		this.hasATarget = true;
 	},
 	missionAccomplished: function() {
 		this.hasATarget = false;
 	},
 	calculateGoal: function() {
+		if (this.hasATarget) {
 
-		var distance;
-		var angle;
-		var degrees;
-		var relativeX;
-		var relativeY;
-
-
-		distance = round(Math.sqrt(Math.pow(( this.target.x - this.position.x ), 2) + Math.pow(( this.target.y - this.position.y ), 2)), 4);
-		relativeX = this.target.x - this.position.x; //relative
-		relativeY = this.target.y - this.position.y;
-		angle = round(Math.atan2(-(relativeY), relativeX), 4);
-		degrees = round(angle * (180 / Math.PI), 4);  //convert from radians to degrees
-		degrees = degrees % 360; //(-360 to 360)prevent overflow
-		degrees = -(degrees); // tank degrees ascends clockwise. atan2 ascends counter clockwise.
+			var distance;
+			var angle;
+			var degrees;
+			var relativeX;
+			var relativeY;
 
 
-		//update tank position
-		//set angle and speed
+			distance = round(Math.sqrt(Math.pow(( this.target.x - this.position.x ), 2) + Math.pow(( this.target.y - this.position.y ), 2)), 4);
+			relativeX = this.target.x - this.position.x; //relative
+			relativeY = this.target.y - this.position.y;
+			angle = round(Math.atan2(-(relativeY), relativeX), 4);
+			degrees = round(angle * (180 / Math.PI), 4);  //convert from radians to degrees
+			degrees = degrees % 360; //(-360 to 360)prevent overflow
+			degrees = -(degrees); // tank degrees ascends clockwise. atan2 ascends counter clockwise.
 
-		var angleDiff = 0;
-		if (degrees > this.angle) { // +
-			this.angleVel = 1;
-		} else { // -
-			this.angleVel = -1;
-		} 
 
-		//set speed
-		if (distance >= 50) {
-			this.speed = 1;
-		} else {
-			this.speed = 0;
-			this.angleVel = 0;
-			this.missionAccomplished();
+			//update tank position
+			//set angle and speed
+
+			var angleDiff = 0;
+			if (degrees > this.angle) { // +
+				this.angleVel = 1;
+			} else { // -
+				this.angleVel = -1;
+			} 
+
+			//set speed
+			if (distance >= 50) {
+				this.speed = 1;
+			} else {
+				this.speed = 0;
+				this.missionAccomplished();
+			}
 		}
-
 	}
 
 };
