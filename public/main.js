@@ -449,6 +449,7 @@ Tank.prototype = {
 				this.speed = 1;
 			} else {
 				this.speed = 0;
+				this.angleVel = 0;
 				this.missionAccomplished();
 			}
 		}
