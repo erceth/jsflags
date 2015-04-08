@@ -371,7 +371,7 @@ ManualControls.prototype = {
 			orders.speed = this.myTanks[i].speed;
 			orders.angleVel = this.myTanks[i].angleVel;
 			this.playerSocket.emit("move", orders);
-			if(this.myTanks[i].tankNumber === 0){console.log(orders)};
+			if(this.myTanks[i].tankNumber === 0){
 		}
 	},
 	listenForUserInput: function() {
@@ -380,7 +380,7 @@ ManualControls.prototype = {
 	    	for (var i = 0; i < self.myTanks.length; i++) {
 	    		self.myTanks[i].setTarget(e.pageX, e.pageY);
 	    	}
-		    console.log(e.pageX, e.pageY);
+		    //console.log(e.pageX, e.pageY);
 		});
 	}
 };
