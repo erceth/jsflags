@@ -73,6 +73,20 @@ var Game = function(map) {
 	Tank.prototype.addBulletToGame = function(bullet) {
 		self.gameState.bullets.push(bullet);
 	};
+
+	Player.prototype.resetGame = function() { 
+		if (self.gameState.score.red) {self.gameState.score.red.score = 0; }
+		if (self.gameState.score.blue) {self.gameState.score.blue.score = 0; }
+		if (self.gameState.score.green) {self.gameState.score.green.score = 0; }
+		if (self.gameState.score.purple) {self.gameState.score.purple.score = 0; }
+		for (var i = 0; i < self.gameState.tanks.length; i++) {
+			self.gameState.tanks[i].die();
+		}
+		for (var j = 0; j < self.gameState.flags.length; j++) {
+			self.gameState.flags[j].die();
+		}
+
+	}
 	
 };
 

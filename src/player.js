@@ -24,6 +24,11 @@ var Player = function(base) {
 	//connection part
 	this.connection.on("connect", function(socket) {
 		console.log(self.playerColor + " connected");
+		if (options.resetOnJoin) {
+			self.resetGame();
+		}
+		//reset game for new player
+
 		socket.on("disconnect", function() {
 			console.log("goodbye y'all");
 		});

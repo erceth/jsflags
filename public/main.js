@@ -1,3 +1,5 @@
+/*** GAME SCREEN ***/
+
 var TEXT_SPACING = 15;
 
 function GameScreen() {
@@ -238,10 +240,16 @@ GameScreen.prototype = {
 		}
 	}
 };
+
+
+
+
+/*** VIEWING ***/
 	
 
 window.onload = function() {
-	var gameScreen = new GameScreen();	
+	var gameScreen = new GameScreen();
+	var manualControls = new ManualControls();
 }
 
 
@@ -262,14 +270,195 @@ function wait (timesToCheck, timeToWait, isItTimeYetFn, scope, callback) {
 	}, timeToWait);
 }
 
+function round(value, decimals) {
+    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
+
+
+
+/*** MANUAL CONTROLS  ***/
+function ManualControls() {
+	var self = this;
+	this.myTanks = [];
+	this.socket = io();
+	this.connected = null;
+	this.initData = null;
+	this.playerSocket = null;
+
+	this.init(function() {
+		self.createBodies();
+		self.refresh();
+
+		//send back commands
+		setInterval(function() {
+			self.calculateGoalsAndSendBackCommands();
+		}, 500);
+		self.listenForUserInput();
+	});
+
+};
+
+ManualControls.prototype = {
+	init: function(callback) {
+		var self = this;
+		this.socket.on("init", function(initData) {
+			if (self.connected) {
+				return;
+			}
+			self.connected = true;
+			self.initData = initData;
+
+			var buttonWrapper = $("#button-wrapper");
+		    buttonWrapper.empty();
+		    for (var i = 0; i < self.initData.players.length; i++) {
+		        var button = $("<span data-player-index='" + i + "' class='player-button' style='background-color:" + self.initData.players[i].playerColor + " '>Player Number " + self.initData.players[i].playerNumber + "</span>").click(function() {
+		            var playerIndex = $(this).data("player-index");
+		            self.playerSocket = io("/" + self.initData.players[playerIndex].namespace);
+		            self.color = self.initData.players[playerIndex].playerColor;
+		            $(this).off();  //prevents multiple clicks
+		            callback();
+		        });
+		        buttonWrapper.append(button);
+
+		    }
+
+		    //add observer button
+		    buttonWrapper.append("<span class='player-button' style='background-color:#666'>Observer</span>");
+
+		    //fade out on selection
+		    buttonWrapper.click(function() {
+		        $("#selectionBoard").fadeOut(3500);
+		    });
+
+		    
+
+
+
+		});
+	},
+	createBodies: function() {
+		for (var i = 0; i < this.initData.numOfTanks; i++) {
+			this.myTanks.push(new Tank(i, this.color));
+		}
+	},
+	refresh: function() {
+		var self = this;
+		var myTanksNewPosition;
+		this.socket.on("refresh", function(gameState) {
+			myTanksNewPosition = gameState.tanks.filter(function(t) {
+				return self.myTanks[0].color === t.color;
+			});
+
+			//update my tanks
+			for (var i = 0; i < self.myTanks.length; i++) {
+				for (var j = 0; j < myTanksNewPosition.length; j++) {
+					if (self.myTanks[i].tankNumber === myTanksNewPosition[j].tankNumber) { //change to j for all tanks
+						self.myTanks[i].position = myTanksNewPosition[j].position;
+						self.myTanks[i].angle = myTanksNewPosition[j].angle;
+					}
+				}
+			}
+
+		});
+
+	},
+	calculateGoalsAndSendBackCommands: function() {
+		var orders = {};
+		var i = this.myTanks.length, speed, angleVel; 
+		while((i-=1) >=0) {
+			this.myTanks[i].calculateGoal();
+			orders.tankNumbers = [this.myTanks[i].tankNumber];
+			orders.speed = this.myTanks[i].speed;
+			orders.angleVel = this.myTanks[i].angleVel;
+			this.playerSocket.emit("move", orders);
+			if(this.myTanks[i].tankNumber === 0){console.log(orders)};
+		}
+	},
+	listenForUserInput: function() {
+		var self = this;
+		$("#canvas").click(function(e) { //only works if canvas starts in top left corner
+	    	for (var i = 0; i < self.myTanks.length; i++) {
+	    		self.myTanks[i].setTarget(e.pageX, e.pageY);
+	    	}
+		    console.log(e.pageX, e.pageY);
+		});
+	}
+};
+
+
+var Tank = function(tankNumber, color) {
+	this.tankNumber = tankNumber;
+	this.color = color;
+	this.position = {x: 0, y: 0};
+	this.angle;
+	this.speed = 0;
+	this.angleVel = 0;
+	
+	this.target = {x: 100, y: 100};
+	this.hasATarget = false;
+
+};
+
+Tank.prototype = {
+	getTarget: function() {
+		return this.target;
+	},
+	hasTarget: function() {
+		return this.hasATarget;
+	},
+	setTarget: function(x, y) {
+		this.target.x = x;
+		this.target.y = y;
+	},
+	missionAccomplished: function() {
+		this.hasATarget = false;
+	},
+	calculateGoal: function() {
+
+		var distance;
+		var angle;
+		var degrees;
+		var relativeX;
+		var relativeY;
+
+
+		distance = round(Math.sqrt(Math.pow(( this.target.x - this.position.x ), 2) + Math.pow(( this.target.y - this.position.y ), 2)), 4);
+		relativeX = this.target.x - this.position.x; //relative
+		relativeY = this.target.y - this.position.y;
+		angle = round(Math.atan2(-(relativeY), relativeX), 4);
+		degrees = round(angle * (180 / Math.PI), 4);  //convert from radians to degrees
+		degrees = degrees % 360; //(-360 to 360)prevent overflow
+		degrees = -(degrees); // tank degrees ascends clockwise. atan2 ascends counter clockwise.
+
+
+		//update tank position
+		//set angle and speed
+
+		var angleDiff = 0;
+		if (degrees > this.angle) { // +
+			this.angleVel = 1;
+		} else { // -
+			this.angleVel = -1;
+		} 
+
+		//set speed
+		if (distance >= 50) {
+			this.speed = 1;
+		} else {
+			this.speed = 0;
+			this.angleVel = 0;
+			this.missionAccomplished();
+		}
+
+	}
+
+};
 
 
 
 
 
 
-
-// /* START MANUAL CONTROLS  */
 // var canvasElement = $("#canvas");
 // var myTanks = [];
 // var manualControls = {};

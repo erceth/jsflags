@@ -78,7 +78,8 @@ var options = {
 	respawnTime: 5000,
 	flagRepawnWait: 10000,
 	pointsForCarry: 1,
-	pointsForCapture: 100
+	pointsForCapture: 100,
+	resetOnJoin: true
 };
 
 module.exports.options = options;
