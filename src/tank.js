@@ -5,7 +5,7 @@ var Bullet = require("./bullet");
 var Tank = function(base, color, tankNumber) {
 	this.type = "tank"
 	this.color = color;
-	this.size = {height: 15, width: 15};
+	this.size = {height: 20, width: 20};
 	this.tankNumber = tankNumber;
 	this.base = {
 		position: base.position,

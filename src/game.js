@@ -43,15 +43,18 @@ var Game = function(map) {
 	io.on("connection", function(socket) {
 		var modifiedPlayers = [];
 		for (var i = 0; i < self.Players.length; i++) {
-			modifiedPlayers.push({
+			var modifiedPlayer = {
 				playerColor: self.Players[i].playerColor,
 				playerNumber: self.Players[i].playerNumber,
 				namespace: self.Players[i].namespace,
 				base: self.Players[i].base
-			});
+			};
+			
+
+			modifiedPlayers.push(modifiedPlayer);
 
 		}
-		io.emit("init", {dimensions: self.map.dimensions, players: modifiedPlayers, numOfTanks: options.numOfTanks, scoreboard: self.map.scoreboard });
+		io.emit("init", {dimensions: self.map.dimensions, players: modifiedPlayers, numOfTanks: options.numOfTanks, scoreboard: self.map.scoreboard});
 	});
 
 	setInterval(function () {

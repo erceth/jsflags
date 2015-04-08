@@ -28,6 +28,7 @@ function GameScreen() {
     };
     this.wallImg = {};
     this.backgroundImg = {};
+    this.baseImg = {};
 
     this.loadImages();
     this.init();
@@ -55,6 +56,12 @@ GameScreen.prototype = {
 
 			self.backgroundCanvas.width = self.dimensions.width;
 	        self.backgroundCanvas.height = self.dimensions.height;
+
+	        for (var i = 0; i < self.initData.players.length; i++) {
+	        	self.baseImg[self.initData.players[i].playerColor].img.width  = self.initData.players[i].base.size.width;
+	        	self.baseImg[self.initData.players[i].playerColor].img.height = self.initData.players[i].base.size.height;
+	        }
+
 		});
 	},
 	fillBackground: function() {
@@ -105,7 +112,7 @@ GameScreen.prototype = {
 
 		//load bases
 		this.baseImg = {
-			red: {img: new Image(100,100), loaded: false}, //TODO: set size from server
+			red: {img: new Image(100,100), loaded: false},
 	    	blue: {img: new Image(100,100), loaded: false},
 	    	green: {img: new Image(100,100), loaded: false},
 	    	purple: {img: new Image(100,100), loaded: false}
