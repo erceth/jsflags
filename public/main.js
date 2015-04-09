@@ -224,6 +224,24 @@ GameScreen.prototype = {
 		            self.screen.drawImage(f, o.position.x - (o.size.width / 2), o.position.y - (o.size.height / 2), o.size.height, o.size.width);
 	        	}
 	        }
+	        //show which tanks are selected
+	        var selectedTanks = self.getSelectedTanks(), tank; //get selected tanks from ManualControl
+	        if (selectedTanks) {
+	        	i = selectedTanks.length;
+		        while ((i-=1) >= 0) {
+		        	tank = selectedTanks[i]
+		        	self.screen.beginPath();
+		        	self.screen.arc(tank.position.x + tank.size.width/2, tank.position.y + tank.size.height/2, tank.size.width * 0.66, 0, 2*Math.PI )
+		        	self.screen.stroke();
+		   //      	ctx.beginPath();
+					// ctx.arc(100,75,50,0,2*Math.PI);
+					
+		        	//self.screen.fillRect(selectedTanks[i].position.x, selectedTanks[i].position.y, selectedTanks[i].size.height, selectedTanks[i].size.width);
+		        }
+	        }
+	        
+	        
+
 		});
 
 		function drawRotatedImage(img, x, y, radians, context) {
@@ -246,6 +264,7 @@ GameScreen.prototype = {
 			context.restore(); 
 		}
 	}
+	//A GameScreen functions lives in Manual Controls
 };
 
 
@@ -291,16 +310,17 @@ function ManualControls() {
 	this.connected = null;
 	this.initData = null;
 	this.playerSocket = null;
+	this.color;
 
 	this.init(function() {
 		self.createBodies();
+		self.createControls();
 		self.refresh();
 
 		//send back commands
 		setInterval(function() {
 			self.calculateGoalsAndSendBackCommands();
 		}, 500);
-		self.listenForUserInput();
 	});
 
 };
@@ -337,16 +357,63 @@ ManualControls.prototype = {
 		        $("#selectionBoard").fadeOut(3500);
 		    });
 
-		    
-
-
-
+		    //gives GameScreen access to selected tanks
+		    GameScreen.prototype.getSelectedTanks = function() {
+		    	if (self.myTanks) {
+					return self.myTanks.filter(function(t) {
+						return t.selected;
+					});
+				}
+				return false;
+		    }
 		});
 	},
 	createBodies: function() {
-		for (var i = 0; i < this.initData.numOfTanks; i++) {
-			this.myTanks.push(new Tank(i, this.color));
+		var self = this;
+		var myTanks = this.initData.tanks.filter(function(t) {
+			return t.color === self.color;
+		});
+		for (var i = 0; i < myTanks.length; i++) {
+			this.myTanks.push(new Tank(i, this.color, myTanks[i].size));
 		}
+	},
+	createControls: function() {
+		var self = this;
+		var selectedTanks = [];
+		$("#canvas").click(function(e) {
+			var t;
+			for (var i = 0; i < self.myTanks.length; i++) {
+				t = self.myTanks[i];
+				if ( (e.pageX > (t.position.x) && e.pageX < t.position.x + t.size.width) && (e.pageY > (t.position.y) && e.pageY < (t.position.y + t.size.height) ) ) {
+					selectedTanks.push(i);
+					self.myTanks[i].selected = true;
+					$("#controls .button[data-my-tanks-index=" + i + "]").addClass("selected");
+					return;
+				}
+			}
+			//tank not clicked. click must be a destination
+			for (var j = 0; j < selectedTanks.length; j++) {
+				self.myTanks[selectedTanks[j]].setTarget(e.pageX, e.pageY);
+				self.myTanks[selectedTanks[j]].selected = false;
+			}
+			selectedTanks = [];
+			$("#controls .button").removeClass("selected");
+		});
+
+
+		$("#controls").css("left", this.initData.dimensions.width + 10);
+		for (var i = 0; i < this.myTanks.length; i++) {
+			var buttonElement = $("<div class='button' data-my-tanks-index=" + i +"><img class='button-img' src='img/" + this.color + "_tank.png'></div>");
+			$("#controls").append(buttonElement);
+
+			buttonElement.on("click", function(e) {
+				var tankIndex = $(this).data("my-tanks-index");
+				$(this).addClass("selected");
+				self.myTanks[tankIndex].selected = true;
+				selectedTanks.push(tankIndex);
+			});
+		}
+
 	},
 	refresh: function() {
 		var self = this;
@@ -379,25 +446,19 @@ ManualControls.prototype = {
 			orders.angleVel = this.myTanks[i].angleVel;
 			this.playerSocket.emit("move", orders);
 		}
-	},
-	listenForUserInput: function() {
-		var self = this;
-		$("#canvas").click(function(e) { //only works if canvas starts in top left corner
-	    	for (var i = 0; i < self.myTanks.length; i++) {
-	    		self.myTanks[i].setTarget(e.pageX, e.pageY);
-	    	}
-		});
 	}
 };
 
 
-var Tank = function(tankNumber, color) {
+var Tank = function(tankNumber, color, size) {
 	this.tankNumber = tankNumber;
 	this.color = color;
 	this.position = {x: 0, y: 0};
+	this.size = size;
 	this.angle;
 	this.speed = 0;
 	this.angleVel = 0;
+	this.selected = false;
 	
 	this.target = {
 		x: 100,

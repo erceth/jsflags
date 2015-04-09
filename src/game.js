@@ -54,7 +54,8 @@ var Game = function(map) {
 			modifiedPlayers.push(modifiedPlayer);
 
 		}
-		io.emit("init", {dimensions: self.map.dimensions, players: modifiedPlayers, numOfTanks: options.numOfTanks, scoreboard: self.map.scoreboard});
+
+		io.emit("init", {dimensions: self.map.dimensions, players: modifiedPlayers, scoreboard: self.map.scoreboard, tanks: self.gameState.tanks});
 	});
 
 	setInterval(function () {
