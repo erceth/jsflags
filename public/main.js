@@ -321,7 +321,20 @@ function ManualControls() {
 		//send back commands
 		setInterval(function() {
 			self.calculateGoalsAndSendBackCommands();
-		}, 500);
+		}, 200);
+
+		//TODO: change this?
+	 //    setInterval(function() {
+		// 	var orders = {
+		// 		tankNumbers: [0,1,2,3]
+		// 	}
+		// 	self.playerSocket.emit("fire", orders);
+		// }, 1000);setInterval(function() {
+		// 	var orders = {
+		// 		tankNumbers: [0,1,2,3]
+		// 	}
+		// 	self.playerSocket.emit("fire", orders);
+		// }, 1000);
 	});
 
 };
@@ -367,14 +380,6 @@ ManualControls.prototype = {
 				}
 				return false;
 		    }
-
-		    //TODO: change this?
-		    function fire() {
-				var orders = {
-					tankNumbers: [0,1,2,3]
-				}
-				command.emit("fire", orders);
-			}
 
 		});
 	},
@@ -443,6 +448,14 @@ ManualControls.prototype = {
 				self.myTanks[tankIndex].selected = !self.myTanks[tankIndex].selected;
 			});
 		}
+
+		$(document).keydown(function(evt) { console.log("space");
+	    	for (var i = 0; i < self.myTanks.length; i++) {
+	    		if (self.myTanks[i].selected) {
+	    			self.playerSocket.emit("fire", {tankNumbers: [i]});
+	    		}
+	    	}
+		});
 
 	},
 	refresh: function() {
