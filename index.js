@@ -75,11 +75,12 @@ var options = {
 	friendlyFireSafe: true,
 	port: 8003,
 	maxBulletSpeed: 5,
-	respawnTime: 5000,
+	respawnTime: 10000,
 	flagRepawnWait: 10000,
 	pointsForCarry: 1,
 	pointsForCapture: 100,
-	resetOnJoin: true
+	resetOnJoin: true,
+	maxFireFrequency: 5000
 };
 
 module.exports.options = options;
@@ -89,6 +90,7 @@ module.exports.options = options;
 var Game = require('./src/game');
 //var map = "maps/squares.json";
 var map = "maps/plain_field.json"
+//var map = "maps/one_vs_one.json"
 var g = new Game(map);
 
 module.exports.Game = g;

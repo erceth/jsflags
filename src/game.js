@@ -31,7 +31,7 @@ var Game = function(map) {
 
 	//create players
 	for (var i = 0; i < this.map.bases.length; i++) {
-		this.Players.push(new Player(this.map.bases[i]));
+		this.Players.push(new Player(this.map.bases[i], this.map.dimensions));
 	}
 
 	var self = this;
@@ -84,7 +84,7 @@ var Game = function(map) {
 		if (self.gameState.score.green) {self.gameState.score.green.score = 0; }
 		if (self.gameState.score.purple) {self.gameState.score.purple.score = 0; }
 		for (var i = 0; i < self.gameState.tanks.length; i++) {
-			self.gameState.tanks[i].die();
+			self.gameState.tanks[i].die(5000);
 		}
 		for (var j = 0; j < self.gameState.flags.length; j++) {
 			self.gameState.flags[j].die();

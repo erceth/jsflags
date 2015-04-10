@@ -4,7 +4,7 @@ var io = globals.io;
 var Tank = require('./tank');
 
 /* Player AND Connection */
-var Player = function(base) {
+var Player = function(base, dimensions) {
 	this.playerNumber = base.playerNumber;
 	this.namespace = "player" + this.playerNumber;
 	this.connection = io.of(this.namespace);
@@ -18,7 +18,7 @@ var Player = function(base) {
 	var self = this;
 
 	for (var i = 0; i < options.numOfTanks; i++) {
-		this.tanks.push(new Tank(this.base, this.playerColor, i));
+		this.tanks.push(new Tank(this.base, this.playerColor, i, dimensions));
 	}
 
 	//connection part

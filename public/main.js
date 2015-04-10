@@ -257,8 +257,9 @@ GameScreen.prototype = {
 		 
 			// draw it up and to the left by half the width
 			// and height of the image 
-			context.fillRect(0, 0, 1, 1); //puts a wee dot on the origin
+
 			context.drawImage(img, -img.width/2, -img.width/2, img.height, img.width);
+			//context.fillRect(0, 0, 1, 1); //puts a wee dot on the origin
 
 			// and restore the co-ords to how they were when we began
 			context.restore(); 
@@ -366,6 +367,15 @@ ManualControls.prototype = {
 				}
 				return false;
 		    }
+
+		    //TODO: change this?
+		    function fire() {
+				var orders = {
+					tankNumbers: [0,1,2,3]
+				}
+				command.emit("fire", orders);
+			}
+
 		});
 	},
 	createBodies: function() {
@@ -379,25 +389,46 @@ ManualControls.prototype = {
 	},
 	createControls: function() {
 		var self = this;
-		var selectedTanks = [];
 		$("#canvas").click(function(e) {
 			var t;
 			for (var i = 0; i < self.myTanks.length; i++) {
 				t = self.myTanks[i];
 				if ( (e.pageX > (t.position.x) && e.pageX < t.position.x + t.size.width) && (e.pageY > (t.position.y) && e.pageY < (t.position.y + t.size.height) ) ) {
-					selectedTanks.push(i);
-					self.myTanks[i].selected = true;
-					$("#controls .button[data-my-tanks-index=" + i + "]").addClass("selected");
+					self.myTanks[i].selected = !self.myTanks[i].selected;
+					$("#controls .button[data-my-tanks-index=" + i + "]").toggleClass("selected");
 					return;
 				}
 			}
 			//tank not clicked. click must be a destination
-			for (var j = 0; j < selectedTanks.length; j++) {
-				self.myTanks[selectedTanks[j]].setTarget(e.pageX, e.pageY);
-				self.myTanks[selectedTanks[j]].selected = false;
+			for (var j = 0; j < self.myTanks.length; j++) {
+				if (self.myTanks[j].selected) {
+					self.myTanks[j].setTarget(e.pageX, e.pageY);
+				}
 			}
-			selectedTanks = [];
-			$("#controls .button").removeClass("selected");
+		});
+
+		//deselect all or select all
+		$("#canvas").dblclick(function() {
+			var anySelected = false;
+			for (var j = 0; j < self.myTanks.length; j++) {
+				if (self.myTanks[j].selected) {
+					anySelected = true;
+					break;
+				}
+			}
+
+			if (anySelected) {
+				for (var k = 0; k < self.myTanks.length; k++) {
+					self.myTanks[k].selected = false;
+				}
+				$("#controls .button").removeClass("selected");
+			} else {
+				for (var l = 0; l < self.myTanks.length; l++) {
+					self.myTanks[l].selected = true;
+				}
+				$("#controls .button").addClass("selected");
+			}
+			
 		});
 
 
@@ -408,9 +439,8 @@ ManualControls.prototype = {
 
 			buttonElement.on("click", function(e) {
 				var tankIndex = $(this).data("my-tanks-index");
-				$(this).addClass("selected");
-				self.myTanks[tankIndex].selected = true;
-				selectedTanks.push(tankIndex);
+				$(this).toggleClass("selected");
+				self.myTanks[tankIndex].selected = !self.myTanks[tankIndex].selected;
 			});
 		}
 

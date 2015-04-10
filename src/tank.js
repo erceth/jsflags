@@ -2,7 +2,7 @@ var globals = require('../index');
 var options = globals.options;
 var Bullet = require("./bullet");
 
-var Tank = function(base, color, tankNumber) {
+var Tank = function(base, color, tankNumber, dimensions) {
 	this.type = "tank"
 	this.color = color;
 	this.size = {height: 20, width: 20};
@@ -15,6 +15,8 @@ var Tank = function(base, color, tankNumber) {
 	this.radians;
 	this.dead = false;
 	this.hasFlag = false;
+	this.dimensions = dimensions;
+	this.reloading = false;
 
 	this.setHomePosition();
 	this.setStartingAngle();
@@ -26,13 +28,39 @@ var Tank = function(base, color, tankNumber) {
 
 Tank.prototype = {
 	setHomePosition: function() {
-		this.position = {
-			x: this.base.position.x - (this.base.size.width / 2) + (this.size.width * this.tankNumber), 
-			y: this.base.position.y - 1  // TODO: make rows - (playerData.size.height/ 2) + (this.size.height* )
-		};
+		var xDiff = this.dimensions.width/2 - this.base.position.x;
+		var yDiff = this.dimensions.height/2 - this.base.position.y;
+		if (Math.abs(xDiff) > Math.abs(yDiff)) {
+			this.position = {
+				x: this.base.position.x - this.size.width / 2,
+				y: this.base.position.y - (this.base.size.height / 2) + (this.size.height * this.tankNumber)
+				
+			};
+		} else {
+			this.position = {
+				x: this.base.position.x - (this.base.size.width / 2) + (this.size.width * this.tankNumber),
+				y: this.base.position.y - this.size.height / 2
+				
+			};
+		}
 	},
 	setStartingAngle: function() {
-		this.angle = 0; //0 to 359
+		// var xDiff = this.dimensions.width/2 - this.base.position.x;
+		// var yDiff = this.dimensions.height/2 - this.base.position.y;
+		// if (Math.abs(xDiff) > Math.abs(yDiff)) {
+		// 	if (xDiff > 0) {
+		// 		this.angle = 0; //right
+		// 	} else {
+		// 		this.angle = 180; //left
+		// 	}
+		// } else {
+		// 	if (yDiff > 0) {
+		// 		this.angle = 90; //up
+		// 	} else {
+		// 		this.angle = 270; //down
+		// 	}
+		// }
+		this.angle = (Math.random() * 1000) % 360;
 		this.angleVel = 0; //-1 to 1
 	},
 	setStartingSpeed: function() {
@@ -74,6 +102,7 @@ Tank.prototype = {
 	},
 	fireTanks: function(order) {
 		if (this.dead) { return; }
+		if (this.reloading) { return; }
 		this.addBulletToGame(new Bullet({
 			color: this.color, 
 			radians: this.radians, 
@@ -81,19 +110,27 @@ Tank.prototype = {
 			position: this.position,
 			tankSize: this.size
 		}));
+		this.reloading = true;
+		var self = this;
+		setTimeout(function() {
+			self.reloading = false;
+		}, options.maxFireFrequency);
 	},
-	die: function() {
+	die: function(respawnTime) {
 		this.dead = true;
 		this.position.x = 0;
 		this.position.y = 0;
 		this.hasFlag = false;
 		var self = this;
+		if (!respawnTime) {
+			respawnTime = options.respawnTime;
+		}
 		setTimeout(function() {
 			self.dead = false;
 			self.setHomePosition();
 			self.setStartingSpeed();
 			self.setStartingAngle();
-		}, options.respawnTime);
+		}, respawnTime);
 	},
 	carryFlag: function(flag) {
 		this.hasFlag = flag.color;

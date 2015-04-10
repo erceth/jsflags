@@ -1,0 +1,41 @@
+{
+	"name": "plain_field",
+	"dimensions": {"width": 700, "height": 700},
+	"boundaries": [
+	{
+		"type": "boundary",
+		"position": {"x": 200, "y": 200},
+		"size": {"height": 50, "width": 50}
+	},
+	{
+		"type": "boundary",
+		"position": {"x": 450, "y": 450},
+		"size": {"height": 50, "width": 50}
+	},
+	{
+		"type": "boundary",
+		"position": {"x": 200, "y": 450},
+		"size": {"height": 50, "width": 50}
+	},
+	{
+		"type": "boundary",
+		"position": {"x": 450, "y": 200},
+		"size": {"height": 50, "width": 50}
+	}
+	],
+	"bases": [{
+		"playerNumber": 1,
+		"color": "red",
+		"position": {"x": 60, "y": 60},
+		"size": {"height": 100, "width": 100}
+	}, {
+		"playerNumber": 2,
+		"color": "blue",
+		"position": {"x": 640, "y": 640},
+		"size": {"height": 100, "width": 100}
+	}],
+	"scoreboard": {
+		"position": {"x": 50, "y": 550},
+		"size": {"height": 100, "width": 150}
+	}
+}

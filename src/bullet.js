@@ -1,6 +1,6 @@
 var Bullet = function(bulletData) {
 	this.type = "bullet";
-	this.size = {height: 3, width: 3};
+	this.size = {height: 6, width: 6};
 	this.color = bulletData.color;
 	this.tankSize = bulletData.tankSize;
 	this.speed = bulletData.options.maxBulletSpeed || 10;
