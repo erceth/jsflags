@@ -77,15 +77,16 @@ Tank.prototype = {
 	},
 	moveX: function() {
 		this.position.x = this.positionStep.x;
+		this.ghost = false;
 	},
 	moveY: function() {
 		this.position.y = this.positionStep.y;
+		this.ghost = false;
 	},
 	moveTanks: function(order) {
 		if (this.dead) { return; }
 		this.angleVel = order.angleVel;
 		this.speed = order.speed;
-		this.ghost = false;
 	},
 	fireTanks: function(order) {
 		if (this.dead) { return; }
