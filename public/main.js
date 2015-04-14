@@ -556,7 +556,7 @@ Tank.prototype = {
 			} 
 
 			//set speed
-			if (distance >= 50) {
+			if (distance >= 10) {
 				this.speed = 1;
 			} else {
 				this.speed = 0;
