@@ -24,7 +24,7 @@
 		"size": {"height": 100, "width": 100}
 	}],
 	"scoreboard": {
-		"position": {"x": 500, "y": 550},
+		"position": {"x": 575, "y": 600},
 		"size": {"height": 100, "width": 150}
 	}
 }

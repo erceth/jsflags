@@ -14,6 +14,7 @@ var Tank = function(base, color, tankNumber, dimensions) {
 	this.positionStep = {x: 0, y: 0};
 	this.radians;
 	this.dead = false;
+	this.ghost = true; //true if just respawned and hasn't moved yet
 	this.hasFlag = false;
 	this.dimensions = dimensions;
 	this.reloading = false;
@@ -32,34 +33,19 @@ Tank.prototype = {
 		var yDiff = this.dimensions.height/2 - this.base.position.y;
 		if (Math.abs(xDiff) > Math.abs(yDiff)) {
 			this.position = {
-				x: this.base.position.x - this.size.width / 2,
-				y: this.base.position.y - (this.base.size.height / 2) + (this.size.height * this.tankNumber)
+				x: this.base.position.x,
+				y: this.base.position.y + this.size.height / 2 - (this.base.size.height / 2) + (this.size.height * this.tankNumber)
 				
 			};
 		} else {
 			this.position = {
-				x: this.base.position.x - (this.base.size.width / 2) + (this.size.width * this.tankNumber),
-				y: this.base.position.y - this.size.height / 2
+				x: this.base.position.x + this.size.width / 2 - (this.base.size.width / 2) + (this.size.width * this.tankNumber),
+				y: this.base.position.y
 				
 			};
 		}
 	},
 	setStartingAngle: function() {
-		// var xDiff = this.dimensions.width/2 - this.base.position.x;
-		// var yDiff = this.dimensions.height/2 - this.base.position.y;
-		// if (Math.abs(xDiff) > Math.abs(yDiff)) {
-		// 	if (xDiff > 0) {
-		// 		this.angle = 0; //right
-		// 	} else {
-		// 		this.angle = 180; //left
-		// 	}
-		// } else {
-		// 	if (yDiff > 0) {
-		// 		this.angle = 90; //up
-		// 	} else {
-		// 		this.angle = 270; //down
-		// 	}
-		// }
 		this.angle = (Math.random() * 1000) % 360;
 		this.angleVel = 0; //-1 to 1
 	},
@@ -99,6 +85,7 @@ Tank.prototype = {
 		if (this.dead) { return; }
 		this.angleVel = order.angleVel;
 		this.speed = order.speed;
+		this.ghost = false;
 	},
 	fireTanks: function(order) {
 		if (this.dead) { return; }
@@ -118,6 +105,7 @@ Tank.prototype = {
 	},
 	die: function(respawnTime) {
 		this.dead = true;
+		this.ghost = true;
 		this.position.x = 0;
 		this.position.y = 0;
 		this.hasFlag = false;

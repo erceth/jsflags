@@ -107,17 +107,18 @@ Game.prototype = {
 			while((j-=1) >= 0) {
 				if (i===j) {continue;}
 				b2 = this.gameState.tanks[j];
-				var b1Right = b1.positionStep.x + b1.size.width;
-				var b1Left = b1.positionStep.x;
+				if (b2.ghost) {continue;} //drive through ghost tanks
+				var b1Right = b1.positionStep.x + b1.size.width / 2;
+				var b1Left = b1.positionStep.x - b1.size.width / 2;
 				
-				var b1Top = b1.positionStep.y;
-				var b1Bottom = b1.positionStep.y + b1.size.height;
+				var b1Top = b1.positionStep.y - b1.size.height / 2;
+				var b1Bottom = b1.positionStep.y + b1.size.height / 2;
 
-				var b2Right = b2.position.x + b2.size.width;
-				var b2Left = b2.position.x;
+				var b2Right = b2.position.x + b2.size.width / 2;
+				var b2Left = b2.position.x - b2.size.width / 2;
 
-				var b2Top = b2.position.y;
-				var b2Bottom = b2.position.y + b2.size.height;
+				var b2Top = b2.position.y - b2.size.height / 2;
+				var b2Bottom = b2.position.y + b2.size.height / 2;
 
 				if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
 					okToMoveX = false;
@@ -134,13 +135,13 @@ Game.prototype = {
 			j=this.gameState.boundaries.length;
 			while((j-=1) >= 0) {
 				b2 = this.gameState.boundaries[j];
+
+				b2Right = b2.position.x + b2.size.width / 2;
+				b2Left = b2.position.x - b2.size.width / 2;
+
+				b2Top = b2.position.y - b2.size.height / 2;
+				b2Bottom = b2.position.y + b2.size.height / 2;
 				
-				b2Right = b2.position.x + b2.size.width;
-				b2Left = b2.position.x;
-
-				b2Top = b2.position.y;
-				b2Bottom = b2.position.y + b2.size.height;
-
 				if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
 					okToMoveX = false;
 					okToMoveY = false;
@@ -163,17 +164,18 @@ Game.prototype = {
 				j = this.gameState.tanks.length;
 				while((j-=1) >= 0) {
 					b2 = this.gameState.tanks[j];
-					b1Right = b1.positionStep.x + b1.size.width;
-					b1Left = b1.positionStep.x;
-					
-					b1Top = b1.positionStep.y;
-					b1Bottom = b1.positionStep.y + b1.size.height;
 
-					b2Right = b2.position.x + b2.size.width;
-					b2Left = b2.position.x;
+					b1Right = b1.position.x + b1.size.width / 2;
+					b1Left = b1.position.x - b1.size.width / 2;
 
-					b2Top = b2.position.y;
-					b2Bottom = b2.position.y + b2.size.height;
+					b1Top = b1.position.y - b1.size.height / 2;
+					b1Bottom = b1.position.y + b1.size.height / 2;
+
+					b2Right = b2.position.x + b2.size.width / 2;
+					b2Left = b2.position.x - b2.size.width / 2;
+
+					b2Top = b2.position.y - b2.size.height / 2;
+					b2Bottom = b2.position.y + b2.size.height / 2;
 
 					if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) {
 						b1.die();
@@ -185,11 +187,11 @@ Game.prototype = {
 				while((k-=1) >= 0) {
 					b2 = this.gameState.boundaries[k];
 					
-					b2Right = b2.position.x + b2.size.width;
-					b2Left = b2.position.x;
+					b2Right = b2.position.x + b2.size.width / 2;
+					b2Left = b2.position.x - b2.size.width / 2;
 
-					b2Top = b2.position.y;
-					b2Bottom = b2.position.y + b2.size.height;
+					b2Top = b2.position.y - b2.size.height / 2;
+					b2Bottom = b2.position.y + b2.size.height / 2;
 
 					if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
 						b1.die();
@@ -217,25 +219,25 @@ Game.prototype = {
 			while ((j-=1) >= 0) {
 				tank = this.gameState.tanks[j];
 				if (tank.dead) {continue;}
-				var flagRight = flag.position.x + flag.size.width;
-				var flagLeft = flag.position.x;
+				var flagRight = flag.position.x + flag.size.width / 2;
+				var flagLeft = flag.position.x - flag.size.width / 2;
 				
-				var flagTop = flag.position.y;
-				var flagBottom = flag.position.y + flag.size.height;
+				var flagTop = flag.position.y - flag.size.height / 2;
+				var flagBottom = flag.position.y + flag.size.height / 2;
 
-				var tankRight = tank.position.x + tank.size.width;
-				var tankLeft = tank.position.x;
+				var tankRight = tank.position.x + tank.size.width / 2;
+				var tankLeft = tank.position.x - tank.size.width / 2;
 
-				var tankTop = tank.position.y;
-				var tankBottom = tank.position.y + tank.size.height;
+				var tankTop = tank.position.y - tank.size.height / 2;
+				var tankBottom = tank.position.y + tank.size.height / 2;
 				if (! (flagRight < tankLeft || flagLeft > tankRight || flagTop > tankBottom || flagBottom < tankTop) ) { 
 					if (tank.color !== flag.color) {
 						flag.followThisTank(tank);
 						tank.carryFlag(flag);
 					} else {
-						flag.die();
+						//flag.die();  //same color as flag, reset
 					}
-					break;
+					//break;
 				}
 			}
 			flag.update();
@@ -275,23 +277,22 @@ Game.prototype = {
 				base = this.Players[j].base;
 				if (!flag.tankToFollow) { continue; }
 				if (!(flag.tankToFollow.color === this.Players[j].playerColor)) { continue; } //tank returns to it's base
-				flagRight = flag.position.x + flag.size.width;
-				flagLeft = flag.position.x;
+				flagRight = flag.position.x + flag.size.width / 2;
+				flagLeft = flag.position.x - flag.size.width / 2;
 				
-				flagTop = flag.position.y;
-				flagBottom = flag.position.y + flag.size.height;
+				flagTop = flag.position.y - flag.size.height / 2;
+				flagBottom = flag.position.y + flag.size.height / 2;
 
-				var baseRight = base.position.x + base.size.width;
-				var baseLeft = base.position.x;
+				var baseRight = base.position.x + base.size.width / 2;
+				var baseLeft = base.position.x - base.size.width / 2;
 
-				var baseTop = base.position.y;
-				var baseBottom = base.position.y + base.size.height;
+				var baseTop = base.position.y - base.size.height / 2;
+				var baseBottom = base.position.y + base.size.height / 2;
 
 				if (! (flagRight < baseLeft || flagLeft > baseRight || flagTop > baseBottom || flagBottom < baseTop) ) { 
 					this.gameState.score[flag.tankToFollow.color].score += options.pointsForCapture;
 					flag.die();
 				}
-
 			}
 		}
 

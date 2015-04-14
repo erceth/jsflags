@@ -73,7 +73,7 @@ GameScreen.prototype = {
 
 	    //fill scoreboard
         this.backgroundScreen.fillStyle = "black";
-	    this.backgroundScreen.fillRect(this.scoreboard.position.x, this.scoreboard.position.y, this.scoreboard.size.width, this.scoreboard.size.height);
+	    this.backgroundScreen.fillRect(this.scoreboard.position.x - this.scoreboard.size.width / 2, this.scoreboard.position.y - this.scoreboard.size.height / 2, this.scoreboard.size.width, this.scoreboard.size.height);
 
 	    //fill bases
 	    var b, img;
@@ -180,8 +180,8 @@ GameScreen.prototype = {
 	        	self.screen.font = "15px sans-serif";
 	        	while((i-=1) >= 0) {
 	        		score = self.gameState.score[self.gameState.flags[i].color];
-	        		self.screen.fillText(score.color, self.scoreboard.position.x + TEXT_SPACING, self.scoreboard.position.y + TEXT_SPACING * (i + 1));
-	        		self.screen.fillText(score.score, self.scoreboard.position.x + (self.scoreboard.size.width / 2), self.scoreboard.position.y + TEXT_SPACING * (i + 1));
+	        		self.screen.fillText(score.color, (self.scoreboard.position.x - self.scoreboard.size.width / 2) + TEXT_SPACING, self.scoreboard.position.y - self.scoreboard.size.height / 2 + TEXT_SPACING * (i + 1));
+	        		self.screen.fillText(score.score, self.scoreboard.position.x, self.scoreboard.position.y - (self.scoreboard.size.height / 2) + TEXT_SPACING * (i + 1));
 	        	}
 	        }
 
@@ -190,7 +190,7 @@ GameScreen.prototype = {
 	        while((i-=1) >= 0) {
 	        	o = self.gameState.tanks[i];
 	        	if (o.dead) {continue;}
-	        	var t = self.tankImg[o.color].img;
+	        	var t = self.tankImg[o.color].img; 
 	        	t.height = o.size.height;
 	            t.width = o.size.width;
 	        	drawRotatedImage(t, o.position.x, o.position.y, o.radians, self.screen);
@@ -202,7 +202,7 @@ GameScreen.prototype = {
 	        		o = self.gameState.boundaries[i];
 	        		color = (o.color) ? o.color : "black";
 	        		self.screen.fillStyle = color;
-	        		self.screen.fillRect(o.position.x, o.position.y, o.size.height, o.size.width);
+	        		self.screen.fillRect(o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width);
 	        	}
 	        }
 	        if (self.gameState.bullets.length > 0) {
@@ -211,7 +211,7 @@ GameScreen.prototype = {
 	        		o = self.gameState.bullets[i];
 	        		color = (o.color) ? o.color : "black";
 	        		self.screen.fillStyle = color;
-	        		self.screen.fillRect(o.position.x, o.position.y, o.size.height, o.size.width);
+	        		self.screen.fillRect(o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width);
 	        	}
 	        }
 	        if (self.gameState.flags.length > 0) {
@@ -221,7 +221,7 @@ GameScreen.prototype = {
 	        		var f = self.flagImg[o.color].img;
 	        		f.height = o.size.height;
 		            f.width = o.size.width;
-		            self.screen.drawImage(f, o.position.x - (o.size.width / 2), o.position.y - (o.size.height / 2), o.size.height, o.size.width);
+		            self.screen.drawImage(f, o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width);
 	        	}
 	        }
 	        //show which tanks are selected
@@ -231,7 +231,7 @@ GameScreen.prototype = {
 		        while ((i-=1) >= 0) {
 		        	tank = selectedTanks[i]
 		        	self.screen.beginPath();
-		        	self.screen.arc(tank.position.x + tank.size.width/2, tank.position.y + tank.size.height/2, tank.size.width * 0.66, 0, 2*Math.PI )
+		        	self.screen.arc(tank.position.x, tank.position.y, tank.size.width * 0.66, 0, 2*Math.PI )
 		        	self.screen.stroke();
 		   //      	ctx.beginPath();
 					// ctx.arc(100,75,50,0,2*Math.PI);
@@ -250,7 +250,7 @@ GameScreen.prototype = {
 			context.save(); 
 		 
 			// move to the middle of where we want to draw our image
-			context.translate(x + img.width/2, y + img.height/2);
+			context.translate(x, y);
 		 
 			// rotate around that point
 			context.rotate(radians);
@@ -258,7 +258,7 @@ GameScreen.prototype = {
 			// draw it up and to the left by half the width
 			// and height of the image 
 
-			context.drawImage(img, -img.width/2, -img.width/2, img.height, img.width);
+			context.drawImage(img, -img.width/2, -img.height/2, img.height, img.width);
 			//context.fillRect(0, 0, 1, 1); //puts a wee dot on the origin
 
 			// and restore the co-ords to how they were when we began

@@ -5,7 +5,7 @@ var Flag = function(color, position) {
 	this.type = "flag";
 	this.originalPosition = position;
 	this.position = this.originalPosition;
-	this.size = {height: 25, width: 25};
+	this.size = {height: 19, width: 19};
 	this.color = color;
 	this.tankToFollow = null;
 };

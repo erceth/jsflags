@@ -4,8 +4,8 @@
 	"boundaries": [
 	{
 		"type": "boundary",
-		"position": {"x": 0, "y": 0},
-		"size": {"height": 1, "width": 1}
+		"position": {"x": 450, "y": 450},
+		"size": {"height": 200, "width": 200}
 	}
 	],
 	"bases": [{
@@ -30,7 +30,7 @@
 		"size": {"height": 100, "width": 100}
 	}],
 	"scoreboard": {
-		"position": {"x": 700, "y": 750},
+		"position": {"x": 775, "y": 800},
 		"size": {"height": 100, "width": 150}
 	}
 }
