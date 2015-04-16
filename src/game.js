@@ -106,13 +106,14 @@ Game.prototype = {
 			j = this.gameState.tanks.length;
 			while((j-=1) >= 0) {
 				if (i===j) {continue;}
-				b2 = this.gameState.tanks[j];
-				if (b2.ghost) {continue;} //drive through ghost tanks
 				var b1Right = b1.positionStep.x + b1.size.width / 2;
 				var b1Left = b1.positionStep.x - b1.size.width / 2;
 				
 				var b1Top = b1.positionStep.y - b1.size.height / 2;
 				var b1Bottom = b1.positionStep.y + b1.size.height / 2;
+
+				b2 = this.gameState.tanks[j];
+				if (b2.ghost) {continue;} //drive through ghost tanks
 
 				var b2Right = b2.position.x + b2.size.width / 2;
 				var b2Left = b2.position.x - b2.size.width / 2;
@@ -141,8 +142,8 @@ Game.prototype = {
 
 				b2Top = b2.position.y - b2.size.height / 2;
 				b2Bottom = b2.position.y + b2.size.height / 2;
-				
-				if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) { 
+				if(b1.color === "red" && b1.tankNumber === 0) {console.log(b1Right, b2Left, b1Left, b2Right, b1Top, b2Bottom, b1Bottom, b2Top);}
+				if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) {
 					okToMoveX = false;
 					okToMoveY = false;
 					break;

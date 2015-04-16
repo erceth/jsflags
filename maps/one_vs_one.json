@@ -4,22 +4,22 @@
 	"boundaries": [
 	{
 		"type": "boundary",
-		"position": {"x": 200, "y": 200},
+		"position": {"x": 225, "y": 225},
 		"size": {"height": 50, "width": 50}
 	},
 	{
 		"type": "boundary",
-		"position": {"x": 450, "y": 450},
+		"position": {"x": 475, "y": 225},
 		"size": {"height": 50, "width": 50}
 	},
 	{
 		"type": "boundary",
-		"position": {"x": 200, "y": 450},
+		"position": {"x": 225, "y": 475},
 		"size": {"height": 50, "width": 50}
 	},
 	{
 		"type": "boundary",
-		"position": {"x": 450, "y": 200},
+		"position": {"x": 475, "y": 475},
 		"size": {"height": 50, "width": 50}
 	}
 	],
