@@ -142,7 +142,6 @@ Game.prototype = {
 
 				b2Top = b2.position.y - b2.size.height / 2;
 				b2Bottom = b2.position.y + b2.size.height / 2;
-				if(b1.color === "red" && b1.tankNumber === 0) {console.log(b1Right, b2Left, b1Left, b2Right, b1Top, b2Bottom, b1Bottom, b2Top);}
 				if (! (b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top) ) {
 					okToMoveX = false;
 					okToMoveY = false;
