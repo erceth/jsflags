@@ -89,8 +89,8 @@ module.exports.options = options;
 //create new game
 var Game = require('./src/game');
 //var map = "maps/square.json";
-//var map = "maps/plain_field.json"
-var map = "maps/one_vs_one.json"
+var map = "maps/plain_field.json"
+//var map = "maps/one_vs_one.json"
 var g = new Game(map);
 
 module.exports.Game = g;
