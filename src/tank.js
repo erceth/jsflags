@@ -123,6 +123,9 @@ Tank.prototype = {
 	},
 	carryFlag: function(flag) {
 		this.hasFlag = flag.color;
+	},
+	dropFlag: function() {
+		this.hasFlag = false;
 	}
 	//one prototype lives in game.js
 };

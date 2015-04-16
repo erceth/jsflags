@@ -32,8 +32,8 @@ Flag.prototype = {
 			x: this.originalPosition.x,
 			y: this.originalPosition.y
 		}
-		if(this.tankToFollow){
-			this.tankToFollow.hasFlag = false;
+		if (this.tankToFollow) {
+			this.tankToFollow.dropFlag();
 		}
 		this.tankToFollow = null;
 	},
