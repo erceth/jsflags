@@ -46,7 +46,7 @@ Tank.prototype = {
 		}
 	},
 	setStartingAngle: function() {
-		this.angle = (Math.random() * 1000) % 360;
+		this.angle = Math.random() * 360; 
 		this.angleVel = 0; //-1 to 1
 	},
 	setStartingSpeed: function() {
@@ -58,7 +58,11 @@ Tank.prototype = {
 		this.positionStep.y = this.position.y;
 
 		this.angle += this.angleVel;
-		this.angle = this.angle % 360;  //prevent angle overflow and keep it positive
+		if (this.angle < 0) {
+			this.angle = (this.angle + 360) % 360; //prevent angle overflow and keep it positive	
+		} else {
+			this.angle = this.angle % 360;  //prevent angle overflow
+		}
 
 		//keep speed within max speed
 		if (this.speed > options.maxTankSpeed) {

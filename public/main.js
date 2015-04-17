@@ -251,6 +251,8 @@ GameScreen.prototype = {
 		 
 			// move to the middle of where we want to draw our image
 			context.translate(x, y);
+
+			//context.fillText(round(object.angle,2), -25, -25); //print angle next to tank
 		 
 			// rotate around that point
 			context.rotate(radians);
@@ -449,7 +451,7 @@ ManualControls.prototype = {
 			});
 		}
 
-		$(document).keydown(function(evt) { console.log("space");
+		$(document).keydown(function(evt) {
 	    	for (var i = 0; i < self.myTanks.length; i++) {
 	    		if (self.myTanks[i].selected) {
 	    			self.playerSocket.emit("fire", {tankNumbers: [i]});
@@ -541,19 +543,39 @@ Tank.prototype = {
 			relativeY = this.target.y - this.position.y;
 			angle = round(Math.atan2(-(relativeY), relativeX), 4);
 			degrees = round(angle * (180 / Math.PI), 4);  //convert from radians to degrees
-			degrees = degrees % 360; //(-360 to 360)prevent overflow
 			degrees = -(degrees); // tank degrees ascends clockwise. atan2 ascends counter clockwise.
+			
+			//convert from -180/180 to 0/360
+			if (degrees < 0) {
+				degrees = (degrees + 360) % 360;
+			}
+
+			var angleDifference = this.angle - degrees;
+
+			if (angleDifference > 0) {
+				if (angleDifference < 180) {
+					this.angleVel = -1;
+				} else {
+					this.angleVel = 1;
+				}
+			} else {
+				if (angleDifference > -180) {
+					this.angleVel = 1;
+				} else {
+					this.angleVel = -1;
+				}
+			}
 
 
 			//update tank position
 			//set angle and speed
 
-			var angleDiff = 0;
-			if (degrees > this.angle) { // +
-				this.angleVel = 1;
-			} else { // -
-				this.angleVel = -1;
-			} 
+			// var angleDiff = 0;
+			// if (degrees > this.angle) { // +
+			// 	this.angleVel = 1;
+			// } else { // -
+			// 	this.angleVel = -1;
+			// } 
 
 			//set speed
 			if (distance >= 10) {
