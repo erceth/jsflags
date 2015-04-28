@@ -19,6 +19,7 @@ canvas {
 	right: 0;
 
 	background: #000;
+	display: none; /* for demo */
 }
 
 #button-wrapper {
