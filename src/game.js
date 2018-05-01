@@ -3,7 +3,7 @@ var Player = require('./player')
 var Boundary = require('./boundary')
 var Flag = require('./flag')
 var globals = require('../index')
-var Tank = require('./tank')
+var Tank = require('./tank') // TODO: let player handle everything to do with Tanks
 
 var app = globals.app
 var fs = globals.fs
@@ -12,12 +12,14 @@ var http = globals.http
 var io = globals.io
 var options = globals.options
 
+var self // For debugging, TODO: remove
+
 class Game {
   constructor (map) {
     http.listen(options.port, () => { // TODO: move to index.js
       console.log('listening on *:' + options.port)
     })
-
+    self = this // For debugging, TODO: remove
     this.players = []
     this.gameState = {
       tanks: [],
@@ -30,7 +32,7 @@ class Game {
 
     // create players
     for (let i = 0; i < this.map.bases.length; i++) {
-      this.players.push(new Player(this.map.bases[i], this.map.dimensions))
+      this.players.push(new Player(this.map.bases[i], this.map.dimensions, this.resetGame))
     }
 
     // create tanks
@@ -82,21 +84,23 @@ class Game {
     }, 1000 / 1)
 
     // a part of tank prototype
+    // TODO: move this to it's own class
     Tank.prototype.addBulletToGame = (bullet) => {
       this.gameState.bullets.push(bullet)
     }
-
-    Player.prototype.resetGame = () => {
-      if (this.gameState.score.red) { this.gameState.score.red.score = 0 } // TODO: simple loop?
-      if (this.gameState.score.blue) { this.gameState.score.blue.score = 0 }
-      if (this.gameState.score.green) { this.gameState.score.green.score = 0 }
-      if (this.gameState.score.purple) { this.gameState.score.purple.score = 0 }
-      for (var i = 0; i < this.gameState.tanks.length; i++) {
-        this.gameState.tanks[i].die(5000)
-      }
-      for (var j = 0; j < this.gameState.flags.length; j++) {
-        this.gameState.flags[j].die()
-      }
+  }
+  
+  // TODO: refactor to not use self
+  resetGame () {
+    if (self.gameState.score.red) { self.gameState.score.red.score = 0 } // TODO: simple loop?
+    if (self.gameState.score.blue) { self.gameState.score.blue.score = 0 }
+    if (self.gameState.score.green) { self.gameState.score.green.score = 0 }
+    if (self.gameState.score.purple) { self.gameState.score.purple.score = 0 }
+    for (var i = 0; i < self.gameState.tanks.length; i++) {
+      self.gameState.tanks[i].die(5000)
+    }
+    for (var j = 0; j < self.gameState.flags.length; j++) {
+      self.gameState.flags[j].die()
     }
   }
 
