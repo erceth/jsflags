@@ -96,21 +96,24 @@ class Tank {
     this.speed = order.speed
   }
 
-  fireTanks (order) {
+  fireTanks () {
     if (this.dead) { return }
     if (this.reloading) { return }
-    this.addBulletToGame(new Bullet({
+    let newBullet = new Bullet({
+      // TODO: move id generator to service
+      id: (Date.now().toString(36) + Math.random().toString(36).substr(2, 5)).toUpperCase(),
       color: this.color,
       radians: this.radians,
       options: options,
       position: this.position,
       tankSize: this.size
-    }))
+    })
     this.reloading = true
     var self = this
     setTimeout(function () {
       self.reloading = false
     }, options.maxFireFrequency)
+    return newBullet
   }
 
   die (respawnTime) {

@@ -1,17 +1,18 @@
 var app = require('express')()
 var fs = require('fs')
-var vm = require('vm')
-var http = require('http').Server(app)
-var io = require('socket.io')(http)
+var vm = require('vm') // TODO: what's this? remove?
 var path = require('path')
 var config = require('./jsconfig')
 
 module.exports.app = app
 module.exports.fs = fs
 module.exports.vm = vm
-module.exports.http = http
-module.exports.io = io
 
+// parse config
+let options = config.options
+let map = JSON.parse(fs.readFileSync(config.options.map, 'utf8')) // get map
+
+// TODO: serve these from a static folder
 app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/index.html'))
 })
@@ -69,11 +70,14 @@ app.get('/img/wall.png', function (req, res) {
   res.sendFile(path.join(__dirname, '/img/wall.png'))
 })
 
-module.exports.options = config.options
+// create a new connection
+
+let Connection = require('./src/connection')
+let conn = new Connection(options, map)
 
 // create new game
-var Game = require('./src/game')
+// var Game = require('./src/game')
 
-var g = new Game(config.map)
+// var g = new Game(config)
 
-module.exports.Game = g
+// module.exports.Game = g

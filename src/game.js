@@ -3,22 +3,17 @@ var Player = require('./player')
 var Boundary = require('./boundary')
 var Flag = require('./flag')
 var globals = require('../index')
-var Tank = require('./tank') // TODO: let player handle everything to do with Tanks
 
 var app = globals.app
 var fs = globals.fs
 var vm = globals.vm
 var http = globals.http
 var io = globals.io
-var options = globals.options
 
 var self // For debugging, TODO: remove
 
 class Game {
-  constructor (map) {
-    http.listen(options.port, () => { // TODO: move to index.js
-      console.log('listening on *:' + options.port)
-    })
+  constructor (options, map) {
     self = this // For debugging, TODO: remove
     this.players = []
     this.gameState = {
@@ -28,23 +23,20 @@ class Game {
       flags: [],
       score: {}
     }
-    this.map = JSON.parse(fs.readFileSync(map, 'utf8')) // get map
 
-    // create players
-    for (let i = 0; i < this.map.bases.length; i++) {
-      this.players.push(new Player(this.map.bases[i], this.map.dimensions, this.resetGame))
-    }
+    this.options = options
+    this.map = map
 
     // create tanks
-    for (let i = 0; i < this.players.length; i++) {
-      for (let j = 0; j < this.players[i].tanks.length; j++) {
-        this.gameState.tanks.push(this.players[i].tanks[j])
-        // TODO: add bullet function
-      }
+    // for (let i = 0; i < this.players.length; i++) {
+    //   for (let j = 0; j < this.players[i].tanks.length; j++) {
+    //     this.gameState.tanks.push(this.players[i].tanks[j])
+    //     // TODO: add bullet function
+    //   }
 
-      this.gameState.flags.push(new Flag(this.players[i].playerColor, this.players[i].base.position))
-      this.gameState.score[this.players[i].playerColor] = {color: this.players[i].playerColor, score: 0}
-    }
+    //   this.gameState.flags.push(new Flag(this.players[i].playerColor, this.players[i].base.position))
+    //   this.gameState.score[this.players[i].playerColor] = {color: this.players[i].playerColor, score: 0}
+    // }
 
     // create boundaries
     for (let k = 0; k < this.map.boundaries.length; k++) {
@@ -78,7 +70,7 @@ class Game {
     setInterval(() => {
       for (var i = 0, max = this.gameState.flags.length; i < max; i++) {
         if (this.gameState.flags[i].tankToFollow) {
-          this.gameState.score[this.gameState.flags[i].tankToFollow.color].score += options.pointsForCarry
+          this.gameState.score[this.gameState.flags[i].tankToFollow.color].score += this.options.pointsForCarry
         }
       }
     }, 1000 / 1)
@@ -89,19 +81,66 @@ class Game {
       this.gameState.bullets.push(bullet)
     }
   }
-  
-  // TODO: refactor to not use self
+
+  isPlayerAvailable (playerNumber) {
+    this.getAvailablePlayers().find((pl) => pl.playerNumber === playerNumber)
+  }
+
+  getAvailablePlayers () {
+    let availablePlayers = this.map.bases.filter((base) => {
+      let pl = this.players.find((player) => {
+        return player.playerNumber === base.playerNumber
+      })
+      return !pl || !pl.connected
+    }).map((player) => {
+      return {
+        'playerNumber': player.playerNumber,
+        'color': player.color
+      }
+    })
+    return availablePlayers
+  }
+
+  createPlayer (playerNumber = this.map.bases.length - 1) {
+    if (this.players.length < this.map.bases.length) {
+      this.players.push(new Player(this.map.bases[playerNumber], this.map.dimensions, this.resetGame, playerNumber))
+    }
+  }
+
+  removePlayer (playerNumber) {
+    let player = this.players.find((pl) => pl.playerNumber === playerNumber)
+    if (player) {
+      player.disconnect()
+    }
+  }
+
+  getTanks () {
+    return []
+  }
+
   resetGame () {
-    if (self.gameState.score.red) { self.gameState.score.red.score = 0 } // TODO: simple loop?
-    if (self.gameState.score.blue) { self.gameState.score.blue.score = 0 }
-    if (self.gameState.score.green) { self.gameState.score.green.score = 0 }
-    if (self.gameState.score.purple) { self.gameState.score.purple.score = 0 }
-    for (var i = 0; i < self.gameState.tanks.length; i++) {
-      self.gameState.tanks[i].die(5000)
+    if (this.gameState.score.red) { this.gameState.score.red.score = 0 } // TODO: simple loop?
+    if (this.gameState.score.blue) { this.gameState.score.blue.score = 0 }
+    if (this.gameState.score.green) { this.gameState.score.green.score = 0 }
+    if (this.gameState.score.purple) { this.gameState.score.purple.score = 0 }
+    for (let i = 0; i < this.players.length; i++) {
+      let tanks = this.players[i].getTanks()
+      let flag = this.players[i].getFlag()
+      for (let j = 0; j < tanks.length; i++) {
+        tanks[j].die(5000)
+      }
+      flag.die()
     }
-    for (var j = 0; j < self.gameState.flags.length; j++) {
-      self.gameState.flags[j].die()
-    }
+  }
+
+  moveTanks (orders, playerNumber) {
+    let player = this.players.find((pl) => pl.playerNumber === playerNumber)
+    player.moveTanks(orders)
+  }
+
+  fireTanks (orders, playerNumber) {
+    let player = this.players.find((pl) => pl.playerNumber === playerNumber)
+    player.fireTanks(orders)
   }
 
   update () {
@@ -274,7 +313,7 @@ class Game {
         let baseBottom = base.position.y + base.size.height / 2
 
         if (!(flagRight < baseLeft || flagLeft > baseRight || flagTop > baseBottom || flagBottom < baseTop)) {
-          this.gameState.score[flag.tankToFollow.color].score += options.pointsForCapture
+          this.gameState.score[flag.tankToFollow.color].score += this.options.pointsForCapture
           flag.die()
         }
       }
