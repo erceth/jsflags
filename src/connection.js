@@ -59,6 +59,12 @@ class Connection {
       })
     }
 
+    // emit game state
+    setInterval(() => {
+      this.update()
+      io.emit('refresh', this.game.gameState)
+    }, 1000 / 60) // denom is fps
+
     this.game = new Game(this.options, map)
   }
 }

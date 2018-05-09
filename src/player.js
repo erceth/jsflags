@@ -22,9 +22,9 @@ class Player {
     this.connected = true
 
     // create tanks
-    for (let i = 0; i < numOfTanks; i++) {
-      this.tanks.push(new Tank(this.base, this.playerColor, i, dimensions))
-    }
+    // for (let i = 0; i < numOfTanks; i++) {
+    //   this.tanks.push(new Tank(this.base, this.playerColor, i))
+    // }
 
     // create flags
     this.flag = new Flag(this.playerColor, this.base.position)
@@ -79,14 +79,20 @@ class Player {
       if ((tankNumber || tankNumber === 0) && (tankNumber < this.tanks.length && tankNumber >= 0)) {
         let newBullet = this.tanks[tankNumber].fireTanks()
         if (newBullet) {
-          this.bullets[newBullet.id] = newBullet
+          this.bullets.push(newBullet)
         }
       }
     }
   }
 
-  removeBullet (bulletId) {
-    delete this.bullets[bulletId]
+  getBullets () {
+    return this.bullets
+  }
+
+  removeDeadBullets () {
+    this.bullets = this.bullets.filter((bull) => {
+      return !bull.dead
+    })
   }
 }
 

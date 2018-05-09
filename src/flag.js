@@ -1,51 +1,37 @@
 var globals = require('../index')
 var options = globals.options
+let GameObject = require('./game-object')
 
-class Flag {
+class Flag extends GameObject {
   constructor (color, position) {
+    super(19, 19, position.x, position.y)
     this.type = 'flag'
     this.originalPosition = position
-    this.position = this.originalPosition
-    this.size = {height: 19, width: 19}
     this.color = color
     this.tankToFollow = null
-  }
-
-  update () {
-    if (this.tankToFollow && !this.tankToFollow.dead) {
-      this.position = {
-        x: this.tankToFollow.position.x,
-        y: this.tankToFollow.position.y
-      }
-    }
-    if (this.tankToFollow && this.tankToFollow.dead) {
-      this.tankToFollow = null
-      this.slowDeath()
-    }
+    this.slowDeathTimeout = null
   }
 
   die () {
-    this.position = {
-      x: this.originalPosition.x,
-      y: this.originalPosition.y
-    }
-    if (this.tankToFollow) {
-      this.tankToFollow.dropFlag()
-    }
+    super()
+    this.setPosition(this.originalPosition.x, this.originalPosition.y)
     this.tankToFollow = null
   }
 
   slowDeath () {
-    var self = this
-    setTimeout(() => {
-      if (!self.tankToFollow) {
-        self.die()
+    this.slowDeathTimeout = setTimeout(() => {
+      if (!this.tankToFollow) {
+        this.die()
+        this.slowDeathTimeout = null
       }
     }, options.flagRepawnWait)
   }
 
   followThisTank (tank) {
     if (!this.tankToFollow) {
+      if (this.slowDeathTimeout) {
+        clearTimeout(this.slowDeathTimeout)
+      }
       this.tankToFollow = tank
     }
   }
