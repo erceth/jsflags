@@ -107,60 +107,76 @@ class Game {
   update () {
     // TANKS
     let b1, b2, i = this.gameState.tanks.length, j, k, b1Right, b1Left, b1Top, b1Bottom, b2Right, b2Left, b2Top, b2Bottom
+    outterLoop: // eslint-disable-line no-labels
     while ((i -= 1) >= 0) {
       let okToMoveX = true, okToMoveY = true
       b1 = this.gameState.tanks[i]
-      b1.calculate()
+      let move = b1.calculateMove()
+      let b1Sides = b1.calculateSides(move.stepX, move.stepY) // calculate new sides of body if it moved
+      
+      // other tanks
       j = this.gameState.tanks.length
       while ((j -= 1) >= 0) {
-        if (i === j) { continue }
-        b1Right = b1.positionStep.x + b1.size.width / 2
-        b1Left = b1.positionStep.x - b1.size.width / 2
-
-        b1Top = b1.positionStep.y - b1.size.height / 2
-        b1Bottom = b1.positionStep.y + b1.size.height / 2
-
         b2 = this.gameState.tanks[j]
+        if (b1.id === b2.id) { continue } // ignore self
         if (b2.ghost) { continue } // drive through ghost tanks
 
-        b2Right = b2.position.x + b2.size.width / 2
-        b2Left = b2.position.x - b2.size.width / 2
+        let b2Sides = b2.calculateSides(b2.position.x, b2.position.y) // get sides of other body
 
-        b2Top = b2.position.y - b2.size.height / 2
-        b2Bottom = b2.position.y + b2.size.height / 2
-
-        if (!(b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top)) {
+        if (!(b1Sides.right < b2Sides.left || b1Sides.left > b2Sides.right || b1Sides.top > b2Sides.bottom || b1Sides.bottom < b2Sides.top)) {
           okToMoveX = false
           okToMoveY = false
-          break
+          break outterLoop // eslint-disable-line no-labels
         }
-        if (b1Right > this.map.dimensions.width || b1Left < 0) {
+        if (b1Sides.right > this.map.dimensions.width || b1Sides.left < 0) {
           okToMoveX = false
+          if (!okToMoveY) {
+            break outterLoop // eslint-disable-line no-labels
+          }
         }
-        if (b1Bottom > this.map.dimensions.height || b1Top < 0) {
+        if (b1Sides.bottom > this.map.dimensions.height || b1Sides.top < 0) {
           okToMoveY = false
+          if (!okToMoveX) {
+            break outterLoop // eslint-disable-line no-labels
+          }
         }
       }
+
+      // boundaries
       j = this.gameState.boundaries.length
       while ((j -= 1) >= 0) {
         b2 = this.gameState.boundaries[j]
 
         b2Right = b2.position.x + b2.size.width / 2
         b2Left = b2.position.x - b2.size.width / 2
-
         b2Top = b2.position.y - b2.size.height / 2
         b2Bottom = b2.position.y + b2.size.height / 2
-        if (!(b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top)) {
+
+        if (!(b1Sides.right < b2Left || b1Sides.left > b2Right || b1Sides.top > b2Bottom || b1Sides.bottom < b2Top)) {
           okToMoveX = false
           okToMoveY = false
-          break
+          break outterLoop // eslint-disable-line no-labels
         }
       }
+      if (b1Sides.right > this.map.dimensions.width || b1Sides.left < 0) {
+        okToMoveX = false
+        if (!okToMoveY) {
+          break outterLoop // eslint-disable-line no-labels
+        }
+      }
+      if (b1Sides.bottom > this.map.dimensions.height || b1Sides.top < 0) {
+        okToMoveY = false
+        if (!okToMoveX) {
+          break outterLoop // eslint-disable-line no-labels
+        }
+      }
+
+      // finally move!
       if (okToMoveX) {
-        b1.moveX()
+        b1.moveX(move.stepX)
       }
       if (okToMoveY) {
-        b1.moveY()
+        b1.moveY(move.stepY)
       }
     }
     // BULLETS
@@ -173,19 +189,15 @@ class Game {
         while ((j -= 1) >= 0) {
           b2 = this.gameState.tanks[j]
 
+          let b2Sides = b2.calculateSides(b2.position.x, b2.position.y) // get sides of other body
+
           b1Right = b1.position.x + b1.size.width / 2
           b1Left = b1.position.x - b1.size.width / 2
 
           b1Top = b1.position.y - b1.size.height / 2
           b1Bottom = b1.position.y + b1.size.height / 2
 
-          b2Right = b2.position.x + b2.size.width / 2
-          b2Left = b2.position.x - b2.size.width / 2
-
-          b2Top = b2.position.y - b2.size.height / 2
-          b2Bottom = b2.position.y + b2.size.height / 2
-
-          if (!(b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top)) {
+          if (!(b1Right < b2Sides.left || b1Left > b2Sides.right || b1Top > b2Sides.bottom || b1Bottom < b2Sides.top)) {
             b1.die()
             b2.die()
             break
@@ -219,13 +231,13 @@ class Game {
         return !bullet.dead
       })
     }
-    let tank, flag, flagRight, flagLeft, flagTop, flagBottom, tankRight, tankLeft, tankTop, tankBottom
+    let tank, flag, flagRight, flagLeft, flagTop, flagBottom
     i = this.gameState.flags.length
     while ((i -= 1) >= 0) {
       flag = this.gameState.flags[i]
       j = this.gameState.tanks.length
       while ((j -= 1) >= 0) {
-        tank = this.gameState.tanks[j]
+        tank = this. gameState.tanks[j]
         if (tank.dead) { continue }
         flagRight = flag.position.x + flag.size.width / 2
         flagLeft = flag.position.x - flag.size.width / 2
@@ -233,12 +245,9 @@ class Game {
         flagTop = flag.position.y - flag.size.height / 2
         flagBottom = flag.position.y + flag.size.height / 2
 
-        tankRight = tank.position.x + tank.size.width / 2
-        tankLeft = tank.position.x - tank.size.width / 2
-
-        tankTop = tank.position.y - tank.size.height / 2
-        tankBottom = tank.position.y + tank.size.height / 2
-        if (!(flagRight < tankLeft || flagLeft > tankRight || flagTop > tankBottom || flagBottom < tankTop)) {
+        let tankSides = tank.calculateSides(tank.position.x, tank.position.y)
+        
+        if (!(flagRight < tankSides.left || flagLeft > tankSides.right || flagTop > tankSides.bottom || flagBottom < tankSides.top)) {
           if (tank.color !== flag.color) {
             flag.followThisTank(tank)
             tank.carryFlag(flag)

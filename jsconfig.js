@@ -1,10 +1,10 @@
 //let map = 'maps/square.json'
-let map = 'maps/plain_field.json'
-//let map = 'maps/one_vs_one.json'
+//let map = 'maps/plain_field.json'
+let map = 'maps/one_vs_one.json'
 
 let config = {
   options: {
-    numOfTanks: 4,
+    numOfTanks: 1,
     maxTankSpeed: 1,
     friendlyFireSafe: true,
     port: 8003,

@@ -18,7 +18,7 @@ class Player {
     this.resetGame = resetGame // reset function
 
     for (var i = 0; i < options.numOfTanks; i++) {
-      this.tanks.push(new Tank(this.base, this.playerColor, i, dimensions))
+      this.tanks.push(new Tank(this.base, this.playerColor, i))
     }
 
     // connection part

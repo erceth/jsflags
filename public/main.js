@@ -192,7 +192,7 @@ GameScreen.prototype = {
 	        	if (o.dead) {continue;}
 	        	var t = self.tankImg[o.color].img; 
 	        	t.height = o.size.height;
-	            t.width = o.size.width;
+	          t.width = o.size.width;
 	        	drawRotatedImage(t, o.position.x, o.position.y, o.radians, self.screen);
 	        }
 
@@ -321,7 +321,7 @@ function ManualControls() {
 		self.refresh();
 
 		//send back commands
-		setInterval(function() {
+		setInterval(function() { // TODO: only do this when needed?
 			self.calculateGoalsAndSendBackCommands();
 		}, 200);
 
