@@ -175,7 +175,9 @@ class Game {
       i = this.gameState.bullets.length
       while ((i -= 1) >= 0) { // extract this duplicate code to template function
         b1 = this.gameState.bullets[i]
-        b1.calculate()
+        let move = b1.calculateMove()
+        let b1Sides = b1.calculateSides(move.stepX, move.stepY) // calculate new sides of body if it moved
+
         j = this.gameState.tanks.length
         while ((j -= 1) >= 0) {
           b2 = this.gameState.tanks[j]
@@ -183,13 +185,7 @@ class Game {
 
           let b2Sides = b2.calculateSides(b2.position.x, b2.position.y) // get sides of other body
 
-          b1Right = b1.position.x + b1.size.width / 2
-          b1Left = b1.position.x - b1.size.width / 2
-
-          b1Top = b1.position.y - b1.size.height / 2
-          b1Bottom = b1.position.y + b1.size.height / 2
-
-          if (!(b1Right < b2Sides.left || b1Left > b2Sides.right || b1Top > b2Sides.bottom || b1Bottom < b2Sides.top)) {
+          if (!(b1Sides.right < b2Sides.left || b1Sides.left > b2Sides.right || b1Sides.top > b2Sides.bottom || b1Sides.bottom < b2Sides.top)) {
             b1.die()
             b2.die()
             break //outterLoop // eslint-disable-line no-labels
@@ -205,17 +201,17 @@ class Game {
           b2Top = b2.position.y - b2.size.height / 2
           b2Bottom = b2.position.y + b2.size.height / 2
 
-          if (!(b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top)) {
+          if (!(b1Sides.right < b2Left || b1Sides.left > b2Right || b1Sides.top > b2Bottom || b1Sides.bottom < b2Top)) {
             b1.die()
             b2.die()
             break
           }
         }
-        if (b1Right < 0 || b1Left > this.map.dimensions.width || b1Bottom < 0 || b1Top > this.map.dimensions.height) {
+        if (b1Sides.right < 0 || b1Sides.left > this.map.dimensions.width || b1Sides.bottom < 0 || b1Sides.top > this.map.dimensions.height) {
           b1.die()
         }
-        b1.moveX()
-        b1.moveY()
+        b1.moveX(move.stepX)
+        b1.moveY(move.stepY)
       }
 
       // filter out dead bullets
