@@ -1,10 +1,11 @@
 //let map = 'maps/square.json'
-//let map = 'maps/plain_field.json'
-let map = 'maps/one_vs_one.json'
+// let map = 'maps/plain_field.json'
+// let map = 'maps/one_vs_one.json'
+let map = 'maps/one_vs_one_plain.json'
 
 let config = {
   options: {
-    numOfTanks: 1,
+    numOfTanks: 4,
     maxTankSpeed: 1,
     friendlyFireSafe: true,
     port: 8003,
@@ -14,7 +15,7 @@ let config = {
     pointsForCarry: 1,
     pointsForCapture: 100,
     resetOnJoin: true,
-    maxFireFrequency: 5000
+    maxFireFrequency: 500
   },
   map: map
 }

@@ -43,7 +43,7 @@ class GameObject {
       right: x + this.size.width / 2,
       left: x - this.size.width / 2,
       top: y - this.size.height / 2,
-      bottom: y - this.size.height / 2
+      bottom: y + this.size.height / 2
     }
   }
 

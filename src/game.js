@@ -107,9 +107,9 @@ class Game {
   update () {
     // TANKS
     let b1, b2, i = this.gameState.tanks.length, j, k, b1Right, b1Left, b1Top, b1Bottom, b2Right, b2Left, b2Top, b2Bottom
-    outterLoop: // eslint-disable-line no-labels
+    // outterLoop: // eslint-disable-line no-labels
     while ((i -= 1) >= 0) {
-      let okToMoveX = true, okToMoveY = true
+      let okToMoveX = true, okToMoveY = true, okToMoveXBoundary = true, okToMoveYBoundary = true
       b1 = this.gameState.tanks[i]
       let move = b1.calculateMove()
       let b1Sides = b1.calculateSides(move.stepX, move.stepY) // calculate new sides of body if it moved
@@ -126,20 +126,15 @@ class Game {
         if (!(b1Sides.right < b2Sides.left || b1Sides.left > b2Sides.right || b1Sides.top > b2Sides.bottom || b1Sides.bottom < b2Sides.top)) {
           okToMoveX = false
           okToMoveY = false
-          break outterLoop // eslint-disable-line no-labels
         }
-        if (b1Sides.right > this.map.dimensions.width || b1Sides.left < 0) {
-          okToMoveX = false
-          if (!okToMoveY) {
-            break outterLoop // eslint-disable-line no-labels
-          }
-        }
-        if (b1Sides.bottom > this.map.dimensions.height || b1Sides.top < 0) {
-          okToMoveY = false
-          if (!okToMoveX) {
-            break outterLoop // eslint-disable-line no-labels
-          }
-        }
+      }
+
+      // map edge
+      if (b1Sides.right > this.map.dimensions.width || b1Sides.left < 0) {
+        okToMoveXBoundary = false
+      }
+      if (b1Sides.bottom > this.map.dimensions.height || b1Sides.top < 0) {
+        okToMoveYBoundary = false
       }
 
       // boundaries
@@ -153,30 +148,26 @@ class Game {
         b2Bottom = b2.position.y + b2.size.height / 2
 
         if (!(b1Sides.right < b2Left || b1Sides.left > b2Right || b1Sides.top > b2Bottom || b1Sides.bottom < b2Top)) {
-          okToMoveX = false
-          okToMoveY = false
-          break outterLoop // eslint-disable-line no-labels
+          okToMoveXBoundary = false
+          okToMoveYBoundary = false
         }
       }
       if (b1Sides.right > this.map.dimensions.width || b1Sides.left < 0) {
-        okToMoveX = false
-        if (!okToMoveY) {
-          break outterLoop // eslint-disable-line no-labels
-        }
+        okToMoveXBoundary = false
       }
       if (b1Sides.bottom > this.map.dimensions.height || b1Sides.top < 0) {
-        okToMoveY = false
-        if (!okToMoveX) {
-          break outterLoop // eslint-disable-line no-labels
-        }
+        okToMoveYBoundary = false
       }
 
       // finally move!
-      if (okToMoveX) {
+      if ((okToMoveX || b1.ghost) && okToMoveXBoundary) {
         b1.moveX(move.stepX)
       }
-      if (okToMoveY) {
+      if ((okToMoveY || b1.ghost) && okToMoveYBoundary) {
         b1.moveY(move.stepY)
+      }
+      if (!b1.dead && b1.ghost && okToMoveX && okToMoveY) {
+        b1.noLongerGhost()
       }
     }
     // BULLETS
@@ -188,6 +179,7 @@ class Game {
         j = this.gameState.tanks.length
         while ((j -= 1) >= 0) {
           b2 = this.gameState.tanks[j]
+          if (b2.dead) { continue }
 
           let b2Sides = b2.calculateSides(b2.position.x, b2.position.y) // get sides of other body
 
@@ -200,7 +192,7 @@ class Game {
           if (!(b1Right < b2Sides.left || b1Left > b2Sides.right || b1Top > b2Sides.bottom || b1Bottom < b2Sides.top)) {
             b1.die()
             b2.die()
-            break
+            break //outterLoop // eslint-disable-line no-labels
           }
         }
         k = this.gameState.boundaries.length
@@ -237,7 +229,7 @@ class Game {
       flag = this.gameState.flags[i]
       j = this.gameState.tanks.length
       while ((j -= 1) >= 0) {
-        tank = this. gameState.tanks[j]
+        tank = this.gameState.tanks[j]
         if (tank.dead) { continue }
         flagRight = flag.position.x + flag.size.width / 2
         flagLeft = flag.position.x - flag.size.width / 2

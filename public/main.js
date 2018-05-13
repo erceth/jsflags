@@ -528,7 +528,7 @@ Tank.prototype = {
 	missionAccomplished: function() {
 		this.hasATarget = false;
 	},
-	calculateGoal: function() {
+	calculateGoal: function() { 
 		if (this.hasATarget) {
 
 			var distance;

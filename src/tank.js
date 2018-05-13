@@ -16,14 +16,14 @@ class Tank extends GameObject {
       size: base.size
     }
 
-    this.ghost = true // true if just spawned and hasn't moved yet
+    this.ghost = true // can go through other tanks
     this.hasFlag = false
     this.reloading = false
+    this.respawnTimeoutSet = null
   }
 
   moveTanks (order) {
     if (this.dead) { return }
-    this.ghost = false
     this.angleVel = order.angleVel
 
     // keep speed within max speed
@@ -63,18 +63,23 @@ class Tank extends GameObject {
   die (respawnTime) {
     super.die()
     this.ghost = true
-    this.position.x = 0
-    this.position.y = 0
+    // this.position.x = 1
+    // this.position.y = 1
     this.hasFlag = false
+    this.angleVel = 0
+    this.speed = 0
+    if (this.respawnTimeoutSet) { // prevents multiple timeouts
+      return
+    }
     if (!respawnTime) {
       respawnTime = options.respawnTime
     }
     setTimeout(() => {
       this.dead = false
       this.setPosition(this.base.position.x, this.base.position.y)
-      this.angleVel = 0
-      this.speed = 0
+      this.respawnTimeoutSet = false
     }, respawnTime)
+    this.respawnTimeoutSet = true
   }
 
   carryFlag (flag) {
@@ -83,6 +88,10 @@ class Tank extends GameObject {
 
   dropFlag () {
     this.hasFlag = false
+  }
+
+  noLongerGhost () {
+    this.ghost = false
   }
 }
 
