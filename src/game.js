@@ -89,7 +89,7 @@ class Game {
       this.gameState.bullets.push(bullet)
     }
   }
-  
+
   // TODO: refactor to not use self
   resetGame () {
     if (self.gameState.score.red) { self.gameState.score.red.score = 0 } // TODO: simple loop?
@@ -106,14 +106,14 @@ class Game {
 
   update () {
     // TANKS
-    let b1, b2, i = this.gameState.tanks.length, j, k, b1Right, b1Left, b1Top, b1Bottom, b2Right, b2Left, b2Top, b2Bottom
+    let b1, b2, i = this.gameState.tanks.length, j, k // eslint-disable-line one-var
     // outterLoop: // eslint-disable-line no-labels
     while ((i -= 1) >= 0) {
-      let okToMoveX = true, okToMoveY = true, okToMoveXBoundary = true, okToMoveYBoundary = true
+      let okToMoveX = true, okToMoveY = true, okToMoveXBoundary = true, okToMoveYBoundary = true // eslint-disable-line one-var
       b1 = this.gameState.tanks[i]
       let move = b1.calculateMove()
       let b1Sides = b1.calculateSides(move.stepX, move.stepY) // calculate new sides of body if it moved
-      
+
       // other tanks
       j = this.gameState.tanks.length
       while ((j -= 1) >= 0) {
