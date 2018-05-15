@@ -82,14 +82,6 @@ class Tank extends GameObject {
     this.respawnTimeoutSet = true
   }
 
-  carryFlag (flag) {
-    this.hasFlag = flag.color
-  }
-
-  dropFlag () {
-    this.hasFlag = false
-  }
-
   noLongerGhost () {
     this.ghost = false
   }

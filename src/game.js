@@ -169,7 +169,19 @@ class Game {
       if (!b1.dead && b1.ghost && okToMoveX && okToMoveY) {
         b1.noLongerGhost()
       }
+
+      // check if tank intersect with flag
+      k = this.gameState.flags.length
+      while ((k -= 1) >= 0) {
+        let b2 = this.gameState.flags[k]
+        if ((b1.color === b2.color) || b2.tankToFollow) { continue }
+        let b2Sides = b2.calculateSides(b2.position.x, b2.position.y)
+        if (!(b1Sides.right < b2Sides.left || b1Sides.left > b2Sides.right || b1Sides.top > b2Sides.bottom || b1Sides.bottom < b2Sides.top)) {
+          b2.tankToFollow = b1
+        }
+      }
     }
+
     // BULLETS
     if (this.gameState.bullets.length > 0) {
       i = this.gameState.bullets.length
@@ -219,50 +231,26 @@ class Game {
         return !bullet.dead
       })
     }
-    let tank, flag, flagRight, flagLeft, flagTop, flagBottom
+
+    // FLAGS
     i = this.gameState.flags.length
     while ((i -= 1) >= 0) {
-      flag = this.gameState.flags[i]
-      j = this.gameState.tanks.length
-      while ((j -= 1) >= 0) {
-        tank = this.gameState.tanks[j]
-        if (tank.dead) { continue }
-        flagRight = flag.position.x + flag.size.width / 2
-        flagLeft = flag.position.x - flag.size.width / 2
-
-        flagTop = flag.position.y - flag.size.height / 2
-        flagBottom = flag.position.y + flag.size.height / 2
-
-        let tankSides = tank.calculateSides(tank.position.x, tank.position.y)
-        
-        if (!(flagRight < tankSides.left || flagLeft > tankSides.right || flagTop > tankSides.bottom || flagBottom < tankSides.top)) {
-          if (tank.color !== flag.color) {
-            flag.followThisTank(tank)
-            tank.carryFlag(flag)
-          } else {
-            // flag.die();  //same color as flag, reset
-          }
-          // break;
-        }
+      if (!this.gameState.flags[i].tankToFollow) { continue }
+      let flag = this.gameState.flags[i]
+      let tank = flag.tankToFollow
+      if (tank && !tank.dead) {
+        flag.setPosition(tank.position.x, tank.position.y)
       }
-      flag.update()
-    }
-
-    // check if flag is returned to base
-    let base
-    i = this.gameState.flags.length
-    while ((i -= 1) >= 0) {
-      flag = this.gameState.flags[i]
-      j = this.players.length
+      if (tank && tank.dead) {
+        flag.slowDeath()
+        continue
+      }
+      let flagSides = b1.calculateSides(flag.position.x, flag.position.y)
+      // does flag intersect with base
+      let j = this.players.length
       while ((j -= 1) >= 0) {
-        base = this.players[j].base
-        if (!flag.tankToFollow) { continue }
-        if (!(flag.tankToFollow.color === this.players[j].playerColor)) { continue } // tank returns to it's base
-        flagRight = flag.position.x + flag.size.width / 2
-        flagLeft = flag.position.x - flag.size.width / 2
-
-        flagTop = flag.position.y - flag.size.height / 2
-        flagBottom = flag.position.y + flag.size.height / 2
+        if (flag.tankToFollow.color !== this.players[j].playerColor) { continue }
+        let base = this.players[j].base
 
         let baseRight = base.position.x + base.size.width / 2
         let baseLeft = base.position.x - base.size.width / 2
@@ -270,8 +258,8 @@ class Game {
         let baseTop = base.position.y - base.size.height / 2
         let baseBottom = base.position.y + base.size.height / 2
 
-        if (!(flagRight < baseLeft || flagLeft > baseRight || flagTop > baseBottom || flagBottom < baseTop)) {
-          this.gameState.score[flag.tankToFollow.color].score += options.pointsForCapture
+        if (!(flagSides.right < baseLeft || flagSides.left > baseRight || flagSides.top > baseBottom || flagSides.bottom < baseTop)) {
+          this.gameState.score[tank.color].score += options.pointsForCapture
           flag.die()
         }
       }
