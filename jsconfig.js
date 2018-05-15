@@ -1,7 +1,7 @@
-//let map = 'maps/square.json'
+// let map = 'maps/square.json'
 // let map = 'maps/plain_field.json'
-// let map = 'maps/one_vs_one.json'
-let map = 'maps/one_vs_one_plain.json'
+let map = 'maps/one_vs_one.json'
+// let map = 'maps/one_vs_one_plain.json'
 
 let config = {
   options: {

@@ -141,13 +141,9 @@ class Game {
       j = this.gameState.boundaries.length
       while ((j -= 1) >= 0) {
         b2 = this.gameState.boundaries[j]
+        let b2Sides = b2.calculateSides(b2.position.x, b2.position.y)
 
-        b2Right = b2.position.x + b2.size.width / 2
-        b2Left = b2.position.x - b2.size.width / 2
-        b2Top = b2.position.y - b2.size.height / 2
-        b2Bottom = b2.position.y + b2.size.height / 2
-
-        if (!(b1Sides.right < b2Left || b1Sides.left > b2Right || b1Sides.top > b2Bottom || b1Sides.bottom < b2Top)) {
+        if (!(b1Sides.right < b2Sides.left || b1Sides.left > b2Sides.right || b1Sides.top > b2Sides.bottom || b1Sides.bottom < b2Sides.top)) {
           okToMoveXBoundary = false
           okToMoveYBoundary = false
         }
@@ -206,14 +202,9 @@ class Game {
         k = this.gameState.boundaries.length
         while ((k -= 1) >= 0) {
           b2 = this.gameState.boundaries[k]
+          let b2Sides = b2.calculateSides(b2.position.x, b2.position.y)
 
-          b2Right = b2.position.x + b2.size.width / 2
-          b2Left = b2.position.x - b2.size.width / 2
-
-          b2Top = b2.position.y - b2.size.height / 2
-          b2Bottom = b2.position.y + b2.size.height / 2
-
-          if (!(b1Sides.right < b2Left || b1Sides.left > b2Right || b1Sides.top > b2Bottom || b1Sides.bottom < b2Top)) {
+          if (!(b1Sides.right < b2Sides.left || b1Sides.left > b2Sides.right || b1Sides.top > b2Sides.bottom || b1Sides.bottom < b2Sides.top)) {
             b1.die()
             b2.die()
             break

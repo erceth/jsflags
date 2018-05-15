@@ -1,24 +1,9 @@
-class Boundary {
+let GameObject = require('./game-object')
+
+class Boundary extends GameObject {
   constructor (boundaryData) {
+    super(boundaryData.size.width, boundaryData.size.height, boundaryData.position.x, boundaryData.position.y)
     this.type = 'boundary'
-    this.position = boundaryData.position
-    this.positionStep = this.position
-    this.size = boundaryData.size
-  }
-
-  calculate () {
-
-  }
-
-  moveX () {
-
-  }
-
-  moveY () {
-
-  }
-  // needed
-  die () {
   }
 }
 
