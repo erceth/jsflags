@@ -85,6 +85,14 @@ class Tank extends GameObject {
   noLongerGhost () {
     this.ghost = false
   }
+
+  carryFlag (flag) {
+    this.hasFlag = flag.color
+  }
+
+  dropFlag () {
+    this.hasFlag = false
+  }
 }
 
 module.exports = Tank

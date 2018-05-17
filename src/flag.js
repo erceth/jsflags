@@ -19,6 +19,9 @@ class Flag extends GameObject {
   die () {
     super.setPosition(this.originalPositionX, this.originalPositionY)
     this.tankToFollow = null
+    if (this.tankToFollow) {
+      this.tankToFollow.dropFlag()
+    }
   }
 
   slowDeath () {

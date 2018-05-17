@@ -170,10 +170,11 @@ class Game {
       k = this.gameState.flags.length
       while ((k -= 1) >= 0) {
         let b2 = this.gameState.flags[k]
-        if ((b1.color === b2.color) || b2.tankToFollow) { continue }
+        if ((b1.color === b2.color) || b1.dead || b2.tankToFollow) { continue }
         let b2Sides = b2.calculateSides(b2.position.x, b2.position.y)
         if (!(b1Sides.right < b2Sides.left || b1Sides.left > b2Sides.right || b1Sides.top > b2Sides.bottom || b1Sides.bottom < b2Sides.top)) {
           b2.tankToFollow = b1
+          b1.carryFlag(b2)
         }
       }
     }
@@ -252,6 +253,7 @@ class Game {
         if (!(flagSides.right < baseLeft || flagSides.left > baseRight || flagSides.top > baseBottom || flagSides.bottom < baseTop)) {
           this.gameState.score[tank.color].score += options.pointsForCapture
           flag.die()
+          break
         }
       }
     }
@@ -259,3 +261,11 @@ class Game {
 }
 
 module.exports = Game
+
+
+/*
+LEFT OFF:
+- upgrade JSFlags-ai dependencies
+- fix ee-jsflags-ai from not returning the flag properly
+- make jsflags-server depend on js-flags and js-flags-ai npm packages
+*/

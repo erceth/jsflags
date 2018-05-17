@@ -11,11 +11,11 @@ let config = {
     port: 8003,
     maxBulletSpeed: 5,
     respawnTime: 10000,
-    flagRepawnWait: 10000,
+    flagRepawnWait: 100000,
     pointsForCarry: 1,
     pointsForCapture: 100,
     resetOnJoin: true,
-    maxFireFrequency: 500
+    maxFireFrequency: 1000
   },
   map: map
 }

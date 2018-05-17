@@ -193,7 +193,7 @@ GameScreen.prototype = {
 	        	var t = self.tankImg[o.color].img; 
 	        	t.height = o.size.height;
 	          t.width = o.size.width;
-	        	drawRotatedImage(t, o.position.x, o.position.y, o.radians, self.screen);
+	        	drawRotatedImage(t, o.position.x, o.position.y, o.radians, self.screen, o.tankNumber + 1);
 	        }
 
 	        if (self.gameState.boundaries.length > 0) {
@@ -244,7 +244,7 @@ GameScreen.prototype = {
 
 		});
 
-		function drawRotatedImage(img, x, y, radians, context) {
+		function drawRotatedImage(img, x, y, radians, context, text) {
 			// save the current co-ordinate system 
 			// before we screw with it
 			context.save(); 
@@ -253,6 +253,10 @@ GameScreen.prototype = {
 			context.translate(x, y);
 
 			//context.fillText(round(object.angle,2), -25, -25); //print angle next to tank
+			
+			if (text) {
+				context.fillText(text, -5, 20); //print angle next to tank
+			}
 		 
 			// rotate around that point
 			context.rotate(radians);
@@ -397,16 +401,7 @@ ManualControls.prototype = {
 	createControls: function() {
 		var self = this;
 		$("#canvas").click(function(e) {
-			var t;
-			for (var i = 0; i < self.myTanks.length; i++) {
-				t = self.myTanks[i];
-				if ( (e.pageX > (t.position.x) && e.pageX < t.position.x + t.size.width) && (e.pageY > (t.position.y) && e.pageY < (t.position.y + t.size.height) ) ) {
-					self.myTanks[i].selected = !self.myTanks[i].selected;
-					$("#controls .button[data-my-tanks-index=" + i + "]").toggleClass("selected");
-					return;
-				}
-			}
-			//tank not clicked. click must be a destination
+			// click is a destination
 			for (var j = 0; j < self.myTanks.length; j++) {
 				if (self.myTanks[j].selected) {
 					self.myTanks[j].setTarget(e.pageX, e.pageY);
@@ -414,49 +409,39 @@ ManualControls.prototype = {
 			}
 		});
 
-		//deselect all or select all
-		$("#canvas").dblclick(function() {
-			var anySelected = false;
-			for (var j = 0; j < self.myTanks.length; j++) {
-				if (self.myTanks[j].selected) {
-					anySelected = true;
-					break;
-				}
-			}
-
-			if (anySelected) {
-				for (var k = 0; k < self.myTanks.length; k++) {
-					self.myTanks[k].selected = false;
-				}
-				$("#controls .button").removeClass("selected");
-			} else {
-				for (var l = 0; l < self.myTanks.length; l++) {
-					self.myTanks[l].selected = true;
-				}
-				$("#controls .button").addClass("selected");
-			}
-			
-		});
-
-
-		$("#controls").css("left", this.initData.dimensions.width + 10);
-		for (var i = 0; i < this.myTanks.length; i++) {
-			var buttonElement = $("<div class='button' data-my-tanks-index=" + i +"><img class='button-img' src='img/" + this.color + "_tank.png'></div>");
-			$("#controls").append(buttonElement);
-
-			buttonElement.on("click", function(e) {
-				var tankIndex = $(this).data("my-tanks-index");
-				$(this).toggleClass("selected");
-				self.myTanks[tankIndex].selected = !self.myTanks[tankIndex].selected;
-			});
-		}
-
+		var keyboardSelectMultiple = true
+		//49=1, 50=2, 51=3, 52=4 81=q, 87=w, 69=e, 82=r 32=space
 		$(document).keydown(function(evt) {
+			if (evt.which == 32) {
 	    	for (var i = 0; i < self.myTanks.length; i++) {
 	    		if (self.myTanks[i].selected) {
 	    			self.playerSocket.emit("fire", {tankNumbers: [i]});
 	    		}
-	    	}
+				}
+				return;
+			}
+
+			if (keyboardSelectMultiple) {
+				keyboardSelectMultiple = false;
+				for (var i = 0; i < self.myTanks.length; i++) {
+					self.myTanks[i].selected = false
+				}
+				setTimeout(function() {
+					keyboardSelectMultiple = true
+				}, 500)
+			}
+			if (evt.which == 49 || evt.which == 81) {
+				self.myTanks[0].selected = true;
+			}
+			if (evt.which == 50 || evt.which == 87) {
+				self.myTanks[1].selected = true;
+			}
+			if (evt.which == 51 || evt.which == 69) {
+				self.myTanks[2].selected = true;
+			}
+			if (evt.which == 52 || evt.which == 82) {
+				self.myTanks[3].selected = true;
+			}
 		});
 
 	},

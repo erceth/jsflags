@@ -38,23 +38,3 @@ canvas {
 	border-radius: 4px;
 
 }
-
-/*** CONTROLS ***/
-
-#controls {
-	position: absolute;
-	left: 700px;
-}
-
-.button {
-	padding: 4px;
-}
-
-.button-img {
-	width: 75px;
-}
-
-.button.selected {
-	border: 3px solid #000;
-}
-
