@@ -94,92 +94,56 @@ GameScreen.prototype = {
     // load tanks
     this.tankImg = {
       red: {
-        img: new Image(15, 15),
-        loaded: false
+        img: new Image(15, 15)
       }, // TODO: set size from server
       blue: {
-        img: new Image(15, 15),
-        loaded: false
+        img: new Image(15, 15)
       },
       green: {
-        img: new Image(15, 15),
-        loaded: false
+        img: new Image(15, 15)
       },
       purple: {
-        img: new Image(15, 15),
-        loaded: false
+        img: new Image(15, 15)
       }
     }
     this.tankImg.red.img.src = base64Images.red_tank
     this.tankImg.blue.img.src = base64Images.blue_tank
     this.tankImg.green.img.src = base64Images.green_tank
     this.tankImg.purple.img.src = base64Images.purple_tank
-    this.tankImg.red.img.onload = function () {
-      self.tankImg.red.loaded = true
-    }
-    this.tankImg.blue.img.onload = function () {
-      self.tankImg.blue.loaded = true
-    }
-    this.tankImg.green.img.onload = function () {
-      self.tankImg.green.loaded = true
-    }
-    this.tankImg.purple.img.onload = function () {
-      self.tankImg.purple.loaded = true
-    }
 
     // load bases
     this.baseImg = {
       red: {
-        img: new Image(100, 100),
-        loaded: false
+        img: new Image(100, 100)
       },
       blue: {
-        img: new Image(100, 100),
-        loaded: false
+        img: new Image(100, 100)
       },
       green: {
-        img: new Image(100, 100),
-        loaded: false
+        img: new Image(100, 100)
       },
       purple: {
-        img: new Image(100, 100),
-        loaded: false
+        img: new Image(100, 100)
       }
     }
     this.baseImg.red.img.src = base64Images.red_basetop
     this.baseImg.blue.img.src = base64Images.blue_basetop
     this.baseImg.green.img.src = base64Images.green_basetop
     this.baseImg.purple.img.src = base64Images.purple_basetop
-    this.baseImg.red.img.onload = function () {
-      self.baseImg.red.loaded = true
-    }
-    this.baseImg.blue.img.onload = function () {
-      self.baseImg.blue.loaded = true
-    }
-    this.baseImg.green.img.onload = function () {
-      self.baseImg.green.loaded = true
-    }
-    this.baseImg.purple.img.onload = function () {
-      self.baseImg.purple.loaded = true
-    }
 
     // load flags
     this.flagImg = {
       red: {
-        img: new Image(20, 20),
-        loaded: false
+        img: new Image(20, 20)
       }, // TODO: set size from server
       blue: {
-        img: new Image(20, 20),
-        loaded: false
+        img: new Image(20, 20)
       },
       green: {
-        img: new Image(20, 20),
-        loaded: false
+        img: new Image(20, 20)
       },
       purple: {
-        img: new Image(20, 20),
-        loaded: false
+        img: new Image(20, 20)
       }
     }
     this.flagImg.red.img.src = base64Images.red_flag
@@ -201,8 +165,7 @@ GameScreen.prototype = {
 
     // load wall
     this.wallImg = {
-      img: new Image(100, 100),
-      loaded: false
+      img: new Image(100, 100)
     }
     this.wallImg.img.src = base64Images.wall
     this.wallImg.img.onload = function () {
@@ -211,8 +174,7 @@ GameScreen.prototype = {
 
     // load background
     this.backgroundImg = {
-      img: new Image(100, 100),
-      loaded: false
+      img: new Image(100, 100)
     }
     this.backgroundImg.img.src = base64Images.grass
     this.backgroundImg.img.onload = function () {
