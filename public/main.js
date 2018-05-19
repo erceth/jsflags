@@ -298,6 +298,39 @@ function ManualControls () {
   this.initData = null
   this.playerSocket = null
 
+  this.KEYBOARD_CONTROLS = {
+    tankSelectors: [{
+      key: 1,
+      code: 49
+    }, {
+      key: 2,
+      code: 50
+    }, {
+      key: 3,
+      code: 51
+    }, {
+      key: 4,
+      code: 52
+    }, {
+      key: 'q',
+      code: 81
+    }, {
+      key: 'w',
+      code: 87
+    }, {
+      key: 'e',
+      code: 69
+    }, {
+      key: 'r',
+      code: 82
+    }
+    ],
+    fire: {
+      key: 'space',
+      code: 32
+    }
+  }
+
   this.init(function () {
     self.createBodies()
     self.createControls()
@@ -371,9 +404,8 @@ ManualControls.prototype = {
     })
 
     var keyboardSelectMultiple = true
-    // 49=1, 50=2, 51=3, 52=4 81=q, 87=w, 69=e, 82=r 32=space
     $(document).keydown(function (evt) {
-      if (evt.which === 32) {
+      if (evt.which === self.KEYBOARD_CONTROLS.fire.code) {
         for (var i = 0; i < self.myTanks.length; i++) {
           if (self.myTanks[i].selected) {
             self.playerSocket.emit('fire', {
@@ -393,17 +425,10 @@ ManualControls.prototype = {
           keyboardSelectMultiple = true
         }, 500)
       }
-      if (evt.which === 49 || evt.which === 81) {
-        self.myTanks[0].selected = true
-      }
-      if (evt.which === 50 || evt.which === 87) {
-        self.myTanks[1].selected = true
-      }
-      if (evt.which === 51 || evt.which === 69) {
-        self.myTanks[2].selected = true
-      }
-      if (evt.which === 52 || evt.which === 82) {
-        self.myTanks[3].selected = true
+      for (i = 0; i < self.myTanks.length; i++) {
+        if (evt.which === self.KEYBOARD_CONTROLS.tankSelectors[i].code) {
+          self.myTanks[i].selected = true
+        }
       }
     })
   },

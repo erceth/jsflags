@@ -24,6 +24,12 @@ app.get('/base64Images.js', function (req, res) {
 app.get('/styles.css', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/styles.css'))
 })
+app.get('/socket.io.js', function (req, res) {
+  res.sendFile(path.join(__dirname, '/public/socket.io.js'))
+})
+app.get('/jquery-2.2.4.min.js', function (req, res) {
+  res.sendFile(path.join(__dirname, '/public/jquery-2.2.4.min.js'))
+})
 
 module.exports.options = config.options
 
