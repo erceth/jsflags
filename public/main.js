@@ -1,3 +1,4 @@
+/* global io, Image base64Images, $ */
 /** * GAME SCREEN ***/
 
 var TEXT_SPACING = 15
@@ -79,15 +80,6 @@ GameScreen.prototype = {
       img = this.baseImg[this.initData.players[i].playerColor].img
       this.backgroundScreen.drawImage(img, b.position.x - (b.size.width / 2), b.position.y - (b.size.height / 2), b.size.height, b.size.width)
     }
-  },
-  areImagesLoadedYet: function () {
-    var result =
-      this.tankImg.red.loaded && this.tankImg.blue.loaded && this.tankImg.blue.loaded && this.tankImg.green.loaded && this.tankImg.purple.loaded &&
-      this.baseImg.red.loaded && this.baseImg.blue.loaded && this.baseImg.blue.loaded && this.baseImg.green.loaded && this.baseImg.purple.loaded &&
-      this.flagImg.red.loaded && this.flagImg.blue.loaded && this.flagImg.blue.loaded && this.flagImg.green.loaded && this.flagImg.purple.loaded &&
-      this.wallImg.loaded && this.backgroundImg.loaded
-
-    return result
   },
   loadImages: function () {
     var self = this
@@ -201,7 +193,8 @@ GameScreen.prototype = {
     }
 
     // loop tanks
-    var i = this.gameState.tanks.length, o, color
+    i = this.gameState.tanks.length
+    var o, color
     while ((i -= 1) >= 0) {
       o = this.gameState.tanks[i]
       if (o.dead) {
@@ -304,7 +297,6 @@ function ManualControls () {
   this.connected = null
   this.initData = null
   this.playerSocket = null
-  this.color
 
   this.init(function () {
     self.createBodies()
@@ -381,7 +373,7 @@ ManualControls.prototype = {
     var keyboardSelectMultiple = true
     // 49=1, 50=2, 51=3, 52=4 81=q, 87=w, 69=e, 82=r 32=space
     $(document).keydown(function (evt) {
-      if (evt.which == 32) {
+      if (evt.which === 32) {
         for (var i = 0; i < self.myTanks.length; i++) {
           if (self.myTanks[i].selected) {
             self.playerSocket.emit('fire', {
@@ -436,7 +428,7 @@ ManualControls.prototype = {
   },
   calculateGoalsAndSendBackCommands: function () {
     var orders = {}
-    var i = this.myTanks.length, speed, angleVel
+    var i = this.myTanks.length
     while ((i -= 1) >= 0) {
       this.myTanks[i].calculateGoal()
       orders.tankNumbers = [this.myTanks[i].tankNumber]
@@ -455,7 +447,6 @@ var Tank = function (tankNumber, color, size) {
     y: 0
   }
   this.size = size
-  this.angle
   this.speed = 0
   this.angleVel = 0
   this.selected = false
