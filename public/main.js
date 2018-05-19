@@ -355,6 +355,7 @@ ManualControls.prototype = {
       var buttonWrapper = $('#button-wrapper')
       buttonWrapper.empty()
       for (var i = 0; i < self.initData.players.length; i++) {
+        if (self.initData.players[i].connected) { continue }
         var button = $("<span data-player-index='" + i + "' class='player-button' style='background-color:" + self.initData.players[i].playerColor + " '>Player Number " + self.initData.players[i].playerNumber + '</span>').click(function () {
           var playerIndex = $(this).data('player-index')
           self.playerSocket = io('/' + self.initData.players[playerIndex].namespace)

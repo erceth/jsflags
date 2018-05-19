@@ -1,7 +1,7 @@
 {
-  "name": "chat",
-  "version": "1.0.0",
-  "description": "",
+  "name": "jsflags",
+  "version": "2.0.0",
+  "description": "Multiplayer tank game on HTML canvas",
   "main": "index.js",
   "scripts": {
     "start": "index",

@@ -5,9 +5,7 @@ var Flag = require('./flag')
 var globals = require('../index')
 var Tank = require('./tank') // TODO: let player handle everything to do with Tanks
 
-var app = globals.app
 var fs = globals.fs
-var vm = globals.vm
 var http = globals.http
 var io = globals.io
 var options = globals.options
@@ -32,7 +30,7 @@ class Game {
 
     // create players
     for (let i = 0; i < this.map.bases.length; i++) {
-      this.players.push(new Player(this.map.bases[i], this.map.dimensions, this.resetGame, this.sendInit))
+      this.players.push(new Player(this.map.bases[i], this.map.dimensions, this.resetGame.bind(this), this.sendInit.bind(this)))
     }
 
     // create tanks
@@ -80,15 +78,13 @@ class Game {
 
   sendInit () {
     let modifiedPlayers = []
-    let availablePlayers = self.players.filter((play) => {
-      return !play.connected
-    })
-    for (var i = 0; i < availablePlayers.length; i++) {
+    for (var i = 0; i < this.players.length; i++) {
       var modifiedPlayer = {
-        playerColor: availablePlayers[i].playerColor,
-        playerNumber: availablePlayers[i].playerNumber,
-        namespace: availablePlayers[i].namespace,
-        base: availablePlayers[i].base
+        playerColor: this.players[i].playerColor,
+        playerNumber: this.players[i].playerNumber,
+        namespace: this.players[i].namespace,
+        base: this.players[i].base,
+        connected: this.players[i].connected
       }
 
       modifiedPlayers.push(modifiedPlayer)
@@ -97,17 +93,16 @@ class Game {
     io.emit('init', {dimensions: self.map.dimensions, players: modifiedPlayers, scoreboard: self.map.scoreboard, tanks: self.gameState.tanks})
   }
 
-  // TODO: refactor to not use self
   resetGame () {
-    if (self.gameState.score.red) { self.gameState.score.red.score = 0 } // TODO: simple loop?
-    if (self.gameState.score.blue) { self.gameState.score.blue.score = 0 }
-    if (self.gameState.score.green) { self.gameState.score.green.score = 0 }
-    if (self.gameState.score.purple) { self.gameState.score.purple.score = 0 }
-    for (var i = 0; i < self.gameState.tanks.length; i++) {
-      self.gameState.tanks[i].die(5000)
+    if (this.gameState.score.red) { this.gameState.score.red.score = 0 } // TODO: simple loop?
+    if (this.gameState.score.blue) { this.gameState.score.blue.score = 0 }
+    if (this.gameState.score.green) { this.gameState.score.green.score = 0 }
+    if (this.gameState.score.purple) { this.gameState.score.purple.score = 0 }
+    for (var i = 0; i < this.gameState.tanks.length; i++) {
+      this.gameState.tanks[i].die(5000)
     }
-    for (var j = 0; j < self.gameState.flags.length; j++) {
-      self.gameState.flags[j].die()
+    for (var j = 0; j < this.gameState.flags.length; j++) {
+      this.gameState.flags[j].die()
     }
   }
 
@@ -204,7 +199,7 @@ class Game {
           if (!(b1Sides.right < b2Sides.left || b1Sides.left > b2Sides.right || b1Sides.top > b2Sides.bottom || b1Sides.bottom < b2Sides.top)) {
             b1.die()
             b2.die()
-            break //outterLoop // eslint-disable-line no-labels
+            break // outterLoop // eslint-disable-line no-labels
           }
         }
         k = this.gameState.boundaries.length
@@ -271,6 +266,5 @@ module.exports = Game
 
 /*
 LEFT OFF:
-- fix up front-end javascript
 - make jsflags-server depend on js-flags and js-flags-ai npm packages
 */
