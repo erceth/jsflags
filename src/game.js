@@ -271,7 +271,6 @@ module.exports = Game
 
 /*
 LEFT OFF:
-- allow only one connection per player at a time
 - fix up front-end javascript
 - make jsflags-server depend on js-flags and js-flags-ai npm packages
 */

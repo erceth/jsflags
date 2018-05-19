@@ -1,584 +1,605 @@
-/*** GAME SCREEN ***/
+/** * GAME SCREEN ***/
 
-var TEXT_SPACING = 15;
+var TEXT_SPACING = 15
 
-function GameScreen() {
-	var self = this;
-	this.canvas = document.getElementById("canvas");
-	this.screen = this.canvas.getContext("2d");
-	this.backgroundCanvas = document.getElementById("background");
-    this.backgroundScreen = this.backgroundCanvas.getContext("2d");
-	this.socket = io();
-	this.dimensions = {};
-	this.scoreboard = {};
-	this.connected = false;
-	this.initData = null;
+function GameScreen () {
+  var self = this
+  this.canvas = document.getElementById('canvas')
+  this.screen = this.canvas.getContext('2d')
+  this.backgroundCanvas = document.getElementById('background')
+  this.backgroundScreen = this.backgroundCanvas.getContext('2d')
+  this.socket = io()
+  this.dimensions = {}
+  this.scoreboard = {}
+  this.connected = false
+  this.initData = null
 
-	this.tankImg = {
-		red: null,
-		blue: null,
-		green: null,
-		purple: null
-	};
-    this.flagImg = {
-    	red: null,
-		blue: null,
-		green: null,
-		purple: null
-    };
-    this.wallImg = {};
-    this.backgroundImg = {};
-    this.baseImg = {};
+  this.tankImg = {
+    red: null,
+    blue: null,
+    green: null,
+    purple: null
+  }
+  this.flagImg = {
+    red: null,
+    blue: null,
+    green: null,
+    purple: null
+  }
+  this.wallImg = {}
+  this.backgroundImg = {}
+  this.baseImg = {}
 
-    this.loadImages();
-    this.init();
-    var timesTocheck = 5;
-    wait(5, 500, this.areImagesLoadedYet, this, function() {
-    	self.fillBackground();
-    	self.listen();
-    });
-    
+  this.loadImages()
+  this.init()
+  var timesToCheck = 5
+  wait(5, 500, this.areImagesLoadedYet, this, function () {
+    self.fillBackground()
+    self.listen()
+  })
 };
 
 GameScreen.prototype = {
-	init: function() {
-		var self = this;
-		this.socket.on("init", function(initData) {
-			if (self.connected) {
-				return;
-			}
-			self.connected = true;
-			self.initData = initData;
-			self.dimensions = self.initData.dimensions;
-			self.scoreboard = self.initData.scoreboard;
-			self.canvas.width = self.dimensions.width;
-			self.canvas.height = self.dimensions.height;
+  init: function () {
+    var self = this
+    this.socket.on('init', function (initData) {
+      if (self.connected) {
+        return
+      }
+      self.connected = true
+      self.initData = initData
+      self.dimensions = self.initData.dimensions
+      self.scoreboard = self.initData.scoreboard
+      self.canvas.width = self.dimensions.width
+      self.canvas.height = self.dimensions.height
 
-			self.backgroundCanvas.width = self.dimensions.width;
-	        self.backgroundCanvas.height = self.dimensions.height;
+      self.backgroundCanvas.width = self.dimensions.width
+      self.backgroundCanvas.height = self.dimensions.height
 
-	        for (var i = 0; i < self.initData.players.length; i++) {
-	        	self.baseImg[self.initData.players[i].playerColor].img.width  = self.initData.players[i].base.size.width;
-	        	self.baseImg[self.initData.players[i].playerColor].img.height = self.initData.players[i].base.size.height;
-	        }
+      for (var i = 0; i < self.initData.players.length; i++) {
+        self.baseImg[self.initData.players[i].playerColor].img.width = self.initData.players[i].base.size.width
+        self.baseImg[self.initData.players[i].playerColor].img.height = self.initData.players[i].base.size.height
+      }
+    })
+  },
+  fillBackground: function () {
+    // fill grass
+    this.backgroundScreen.rect(0, 0, this.dimensions.width, this.dimensions.height)
+    var backgroundPattern = this.backgroundScreen.createPattern(this.backgroundImg.img, 'repeat')
+    this.backgroundScreen.fillStyle = backgroundPattern
+    this.backgroundScreen.fill()
 
-		});
-	},
-	fillBackground: function() {
-		//fill grass
-		this.backgroundScreen.rect(0, 0, this.dimensions.width, this.dimensions.height);
-	    var backgroundPattern = this.backgroundScreen.createPattern(this.backgroundImg.img, "repeat");
-	    this.backgroundScreen.fillStyle = backgroundPattern;
-	    this.backgroundScreen.fill();
+    // fill scoreboard
+    this.backgroundScreen.fillStyle = 'black'
+    this.backgroundScreen.fillRect(this.scoreboard.position.x - this.scoreboard.size.width / 2, this.scoreboard.position.y - this.scoreboard.size.height / 2, this.scoreboard.size.width, this.scoreboard.size.height)
 
-	    //fill scoreboard
-        this.backgroundScreen.fillStyle = "black";
-	    this.backgroundScreen.fillRect(this.scoreboard.position.x - this.scoreboard.size.width / 2, this.scoreboard.position.y - this.scoreboard.size.height / 2, this.scoreboard.size.width, this.scoreboard.size.height);
+    // fill bases
+    var b, img
+    for (var i = 0, max = this.initData.players.length; i < max; i++) {
+      b = this.initData.players[i].base
+      img = this.baseImg[this.initData.players[i].playerColor].img
+      this.backgroundScreen.drawImage(img, b.position.x - (b.size.width / 2), b.position.y - (b.size.height / 2), b.size.height, b.size.width)
+    }
+  },
+  areImagesLoadedYet: function () {
+    var result =
+      this.tankImg.red.loaded && this.tankImg.blue.loaded && this.tankImg.blue.loaded && this.tankImg.green.loaded && this.tankImg.purple.loaded &&
+      this.baseImg.red.loaded && this.baseImg.blue.loaded && this.baseImg.blue.loaded && this.baseImg.green.loaded && this.baseImg.purple.loaded &&
+      this.flagImg.red.loaded && this.flagImg.blue.loaded && this.flagImg.blue.loaded && this.flagImg.green.loaded && this.flagImg.purple.loaded &&
+      this.wallImg.loaded && this.backgroundImg.loaded
 
-	    //fill bases
-	    var b, img;
-	    for (var i = 0, max = this.initData.players.length; i < max; i++) {
-	    	b = this.initData.players[i].base;
-	    	img = this.baseImg[this.initData.players[i].playerColor].img;
-	    	this.backgroundScreen.drawImage(img, b.position.x - (b.size.width / 2), b.position.y - (b.size.height / 2), b.size.height, b.size.width);
-	    }
-	},
-	areImagesLoadedYet: function() {
-		var result = 
-		this.tankImg.red.loaded && this.tankImg.blue.loaded && this.tankImg.blue.loaded && this.tankImg.green.loaded && this.tankImg.purple.loaded &&
-		this.baseImg.red.loaded && this.baseImg.blue.loaded && this.baseImg.blue.loaded && this.baseImg.green.loaded && this.baseImg.purple.loaded &&
-		this.flagImg.red.loaded && this.flagImg.blue.loaded && this.flagImg.blue.loaded && this.flagImg.green.loaded && this.flagImg.purple.loaded &&
-		this.wallImg.loaded && this.backgroundImg.loaded;
+    return result
+  },
+  loadImages: function () {
+    var self = this
+    // load tanks
+    this.tankImg = {
+      red: {
+        img: new Image(15, 15),
+        loaded: false
+      }, // TODO: set size from server
+      blue: {
+        img: new Image(15, 15),
+        loaded: false
+      },
+      green: {
+        img: new Image(15, 15),
+        loaded: false
+      },
+      purple: {
+        img: new Image(15, 15),
+        loaded: false
+      }
+    }
+    this.tankImg.red.img.src = base64Images.red_tank
+    this.tankImg.blue.img.src = base64Images.blue_tank
+    this.tankImg.green.img.src = base64Images.green_tank
+    this.tankImg.purple.img.src = base64Images.purple_tank
+    this.tankImg.red.img.onload = function () {
+      self.tankImg.red.loaded = true
+    }
+    this.tankImg.blue.img.onload = function () {
+      self.tankImg.blue.loaded = true
+    }
+    this.tankImg.green.img.onload = function () {
+      self.tankImg.green.loaded = true
+    }
+    this.tankImg.purple.img.onload = function () {
+      self.tankImg.purple.loaded = true
+    }
 
-		return result;
-	},
-	loadImages: function() {
-		var self = this;
-		//load tanks
-		this.tankImg = {
-			red: {img: new Image(15,15), loaded: false}, //TODO: set size from server
-	    	blue: {img: new Image(15,15), loaded: false},
-	    	green: {img: new Image(15,15), loaded: false},
-	    	purple: {img: new Image(15,15), loaded: false}
-		};
-		this.tankImg.red.img.src = "img/red_tank.png";
-		this.tankImg.blue.img.src = "img/blue_tank.png";
-		this.tankImg.green.img.src = "img/green_tank.png";
-		this.tankImg.purple.img.src = "img/purple_tank.png";
-		this.tankImg.red.img.onload = function() { self.tankImg.red.loaded = true; };
-		this.tankImg.blue.img.onload = function() { self.tankImg.blue.loaded = true; };
-		this.tankImg.green.img.onload = function() { self.tankImg.green.loaded = true; };
-		this.tankImg.purple.img.onload = function() { self.tankImg.purple.loaded = true; };
+    // load bases
+    this.baseImg = {
+      red: {
+        img: new Image(100, 100),
+        loaded: false
+      },
+      blue: {
+        img: new Image(100, 100),
+        loaded: false
+      },
+      green: {
+        img: new Image(100, 100),
+        loaded: false
+      },
+      purple: {
+        img: new Image(100, 100),
+        loaded: false
+      }
+    }
+    this.baseImg.red.img.src = base64Images.red_basetop
+    this.baseImg.blue.img.src = base64Images.blue_basetop
+    this.baseImg.green.img.src = base64Images.green_basetop
+    this.baseImg.purple.img.src = base64Images.purple_basetop
+    this.baseImg.red.img.onload = function () {
+      self.baseImg.red.loaded = true
+    }
+    this.baseImg.blue.img.onload = function () {
+      self.baseImg.blue.loaded = true
+    }
+    this.baseImg.green.img.onload = function () {
+      self.baseImg.green.loaded = true
+    }
+    this.baseImg.purple.img.onload = function () {
+      self.baseImg.purple.loaded = true
+    }
 
-		//load bases
-		this.baseImg = {
-			red: {img: new Image(100,100), loaded: false},
-	    	blue: {img: new Image(100,100), loaded: false},
-	    	green: {img: new Image(100,100), loaded: false},
-	    	purple: {img: new Image(100,100), loaded: false}
-		};
-		this.baseImg.red.img.src = "img/red_basetop.png";
-		this.baseImg.blue.img.src = "img/blue_basetop.png";
-		this.baseImg.green.img.src = "img/green_basetop.png";
-		this.baseImg.purple.img.src = "img/purple_basetop.png";
-		this.baseImg.red.img.onload = function() { self.baseImg.red.loaded = true; };
-		this.baseImg.blue.img.onload = function() { self.baseImg.blue.loaded = true; };
-		this.baseImg.green.img.onload = function() { self.baseImg.green.loaded = true; };
-		this.baseImg.purple.img.onload = function() { self.baseImg.purple.loaded = true; };
+    // load flags
+    this.flagImg = {
+      red: {
+        img: new Image(20, 20),
+        loaded: false
+      }, // TODO: set size from server
+      blue: {
+        img: new Image(20, 20),
+        loaded: false
+      },
+      green: {
+        img: new Image(20, 20),
+        loaded: false
+      },
+      purple: {
+        img: new Image(20, 20),
+        loaded: false
+      }
+    }
+    this.flagImg.red.img.src = base64Images.red_flag
+    this.flagImg.blue.img.src = base64Images.blue_flag
+    this.flagImg.green.img.src = base64Images.green_flag
+    this.flagImg.purple.img.src = base64Images.purple_flag
+    this.flagImg.red.img.onload = function () {
+      self.flagImg.red.loaded = true
+    }
+    this.flagImg.blue.img.onload = function () {
+      self.flagImg.blue.loaded = true
+    }
+    this.flagImg.green.img.onload = function () {
+      self.flagImg.green.loaded = true
+    }
+    this.flagImg.purple.img.onload = function () {
+      self.flagImg.purple.loaded = true
+    }
 
+    // load wall
+    this.wallImg = {
+      img: new Image(100, 100),
+      loaded: false
+    }
+    this.wallImg.img.src = base64Images.wall
+    this.wallImg.img.onload = function () {
+      self.wallImg.loaded = true
+    }
 
-		//load flags
-		this.flagImg = {
-			red: {img: new Image(20,20), loaded: false}, //TODO: set size from server
-	    	blue: {img: new Image(20,20), loaded: false},
-	    	green: {img: new Image(20,20), loaded: false},
-	    	purple: {img: new Image(20,20), loaded: false}
-		};
-		this.flagImg.red.img.src = "img/red_flag.png";
-		this.flagImg.blue.img.src = "img/blue_flag.png";
-		this.flagImg.green.img.src = "img/green_flag.png";
-		this.flagImg.purple.img.src = "img/purple_flag.png";
-		this.flagImg.red.img.onload = function() { self.flagImg.red.loaded = true; };
-		this.flagImg.blue.img.onload = function() { self.flagImg.blue.loaded = true; };
-		this.flagImg.green.img.onload = function() { self.flagImg.green.loaded = true; };
-		this.flagImg.purple.img.onload = function() { 
-			self.flagImg.purple.loaded = true; 
-		};
+    // load background
+    this.backgroundImg = {
+      img: new Image(100, 100),
+      loaded: false
+    }
+    this.backgroundImg.img.src = base64Images.grass
+    this.backgroundImg.img.onload = function () {
+      self.backgroundImg.loaded = true
+    }
+  },
+  listen: function () {
+    var self = this
 
-		//load wall
-		this.wallImg = {
-			img: new Image(100, 100), loaded: false
-		};
-		this.wallImg.img.src = "img/wall.png";
-		this.wallImg.img.onload = function() {
-			self.wallImg.loaded = true; 
-		};
+    this.socket.on('refresh', function (gameState) {
+      self.gameState = gameState
+      self.screen.clearRect(0, 0, self.dimensions.width, self.dimensions.height)
 
-		//load background
-		this.backgroundImg = {
-			img: new Image(100, 100), loaded: false
-		};
-		this.backgroundImg.img.src = "img/grass.png";
-		this.backgroundImg.img.onload = function() {
-			self.backgroundImg.loaded = true; 
-		};
-	},
-	listen: function() {
-		var self = this;
+      var i
 
-		this.socket.on('refresh', function (gameState) {
-			self.gameState = gameState;
-			self.screen.clearRect(0, 0, self.dimensions.width, self.dimensions.height);
+      // update score
+      if (self.gameState.flags.length > 0) {
+        var score
+        i = self.gameState.flags.length
+        self.screen.fillStyle = 'white'
+        self.screen.font = '15px sans-serif'
+        while ((i -= 1) >= 0) {
+          score = self.gameState.score[self.gameState.flags[i].color]
+          self.screen.fillText(score.color, (self.scoreboard.position.x - self.scoreboard.size.width / 2) + TEXT_SPACING, self.scoreboard.position.y - self.scoreboard.size.height / 2 + TEXT_SPACING * (i + 1))
+          self.screen.fillText(score.score, self.scoreboard.position.x, self.scoreboard.position.y - (self.scoreboard.size.height / 2) + TEXT_SPACING * (i + 1))
+        }
+      }
 
-			var i;
+      // loop tanks
+      var i = self.gameState.tanks.length, o, color
+      while ((i -= 1) >= 0) {
+        o = self.gameState.tanks[i]
+        if (o.dead) {
+          continue
+        }
+        var t = self.tankImg[o.color].img
+        t.height = o.size.height
+        t.width = o.size.width
+        drawRotatedImage(t, o.position.x, o.position.y, o.radians, self.screen, o.tankNumber + 1)
+      }
 
-			//update score
-			if (self.gameState.flags.length > 0) {
-	        	var score;
-	        	i = self.gameState.flags.length;
-	        	self.screen.fillStyle = 'white';
-	        	self.screen.font = "15px sans-serif";
-	        	while((i-=1) >= 0) {
-	        		score = self.gameState.score[self.gameState.flags[i].color];
-	        		self.screen.fillText(score.color, (self.scoreboard.position.x - self.scoreboard.size.width / 2) + TEXT_SPACING, self.scoreboard.position.y - self.scoreboard.size.height / 2 + TEXT_SPACING * (i + 1));
-	        		self.screen.fillText(score.score, self.scoreboard.position.x, self.scoreboard.position.y - (self.scoreboard.size.height / 2) + TEXT_SPACING * (i + 1));
-	        	}
-	        }
+      if (self.gameState.boundaries.length > 0) {
+        i = self.gameState.boundaries.length
+        while ((i -= 1) >= 0) {
+          o = self.gameState.boundaries[i]
+          color = (o.color) ? o.color : 'black'
+          self.screen.fillStyle = color
+          self.screen.fillRect(o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width)
+        }
+      }
+      if (self.gameState.bullets.length > 0) {
+        i = self.gameState.bullets.length
+        while ((i -= 1) >= 0) {
+          o = self.gameState.bullets[i]
+          color = (o.color) ? o.color : 'black'
+          self.screen.fillStyle = color
+          self.screen.fillRect(o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width)
+        }
+      }
+      if (self.gameState.flags.length > 0) {
+        i = self.gameState.flags.length
+        while ((i -= 1) >= 0) {
+          o = self.gameState.flags[i]
+          var f = self.flagImg[o.color].img
+          f.height = o.size.height
+          f.width = o.size.width
+          self.screen.drawImage(f, o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width)
+        }
+      }
+      // show which tanks are selected
+      var selectedTanks = self.getSelectedTanks(), tank // get selected tanks from ManualControl
+      if (selectedTanks) {
+        i = selectedTanks.length
+        while ((i -= 1) >= 0) {
+          tank = selectedTanks[i]
+          self.screen.beginPath()
+          self.screen.arc(tank.position.x, tank.position.y, tank.size.width * 0.66, 0, 2 * Math.PI)
+          self.screen.stroke()
+        }
+      }
+    })
 
-	        //loop tanks
-	        var i = self.gameState.tanks.length, o, color;
-	        while((i-=1) >= 0) {
-	        	o = self.gameState.tanks[i];
-	        	if (o.dead) {continue;}
-	        	var t = self.tankImg[o.color].img; 
-	        	t.height = o.size.height;
-	          t.width = o.size.width;
-	        	drawRotatedImage(t, o.position.x, o.position.y, o.radians, self.screen, o.tankNumber + 1);
-	        }
+    function drawRotatedImage(img, x, y, radians, context, text) {
+      // save the current co-ordinate system
+      // before we screw with it
+      context.save()
 
-	        if (self.gameState.boundaries.length > 0) {
-	        	i = self.gameState.boundaries.length;
-	        	while ((i-=1) >= 0) {
-	        		o = self.gameState.boundaries[i];
-	        		color = (o.color) ? o.color : "black";
-	        		self.screen.fillStyle = color;
-	        		self.screen.fillRect(o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width);
-	        	}
-	        }
-	        if (self.gameState.bullets.length > 0) {
-	        	i = self.gameState.bullets.length;
-	        	while ((i-=1) >= 0) {
-	        		o = self.gameState.bullets[i];
-	        		color = (o.color) ? o.color : "black";
-	        		self.screen.fillStyle = color;
-	        		self.screen.fillRect(o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width);
-	        	}
-	        }
-	        if (self.gameState.flags.length > 0) {
-	        	i = self.gameState.flags.length;
-	        	while ((i-=1) >= 0) {
-	        		o = self.gameState.flags[i];
-	        		var f = self.flagImg[o.color].img;
-	        		f.height = o.size.height;
-		            f.width = o.size.width;
-		            self.screen.drawImage(f, o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width);
-	        	}
-	        }
-	        //show which tanks are selected
-	        var selectedTanks = self.getSelectedTanks(), tank; //get selected tanks from ManualControl
-	        if (selectedTanks) {
-	        	i = selectedTanks.length;
-		        while ((i-=1) >= 0) {
-		        	tank = selectedTanks[i]
-		        	self.screen.beginPath();
-		        	self.screen.arc(tank.position.x, tank.position.y, tank.size.width * 0.66, 0, 2*Math.PI )
-		        	self.screen.stroke();
-		   //      	ctx.beginPath();
-					// ctx.arc(100,75,50,0,2*Math.PI);
-					
-		        	//self.screen.fillRect(selectedTanks[i].position.x, selectedTanks[i].position.y, selectedTanks[i].size.height, selectedTanks[i].size.width);
-		        }
-	        }
-	        
-	        
+      // move to the middle of where we want to draw our image
+      context.translate(x, y)
 
-		});
+      // context.fillText(round(object.angle,2), -25, -25); //print angle next to tank
 
-		function drawRotatedImage(img, x, y, radians, context, text) {
-			// save the current co-ordinate system 
-			// before we screw with it
-			context.save(); 
-		 
-			// move to the middle of where we want to draw our image
-			context.translate(x, y);
+      if (text) {
+        context.fillText(text, -5, 20) // print angle next to tank
+      }
 
-			//context.fillText(round(object.angle,2), -25, -25); //print angle next to tank
-			
-			if (text) {
-				context.fillText(text, -5, 20); //print angle next to tank
-			}
-		 
-			// rotate around that point
-			context.rotate(radians);
-		 
-			// draw it up and to the left by half the width
-			// and height of the image 
+      // rotate around that point
+      context.rotate(radians)
 
-			context.drawImage(img, -img.width/2, -img.height/2, img.height, img.width);
-			//context.fillRect(0, 0, 1, 1); //puts a wee dot on the origin
+      // draw it up and to the left by half the width
+      // and height of the image
 
-			// and restore the co-ords to how they were when we began
-			context.restore(); 
-		}
-	}
-	//A GameScreen functions lives in Manual Controls
-};
+      context.drawImage(img, -img.width / 2, -img.height / 2, img.height, img.width)
+      // context.fillRect(0, 0, 1, 1); //puts a wee dot on the origin
 
-
-
-
-/*** VIEWING ***/
-	
-
-window.onload = function() {
-	var gameScreen = new GameScreen();
-	var manualControls = new ManualControls();
+      // and restore the co-ords to how they were when we began
+      context.restore()
+    }
+  }
+  // A GameScreen functions lives in Manual Controls
 }
 
+/** * VIEWING ***/
 
-//handy waiting function
+window.onload = function () {
+  var gameScreen = new GameScreen()
+  var manualControls = new ManualControls()
+}
+
+// handy waiting function
 function wait (timesToCheck, timeToWait, isItTimeYetFn, scope, callback) {
-	var self = this;
-	timesToCheck -=1;
-	if (timesToCheck <= 0) {
-		console.log("time expired");
-		return;
-	}
-	setTimeout(function() {
-		if (isItTimeYetFn.call(scope)) {
-			callback();
-		} else {
-			self.wait(timesToCheck, timeToWait, isItTimeYetFn, scope, callback);
-		}
-	}, timeToWait);
+  var self = this
+  timesToCheck -= 1
+  if (timesToCheck <= 0) {
+    console.log('time expired')
+    return
+  }
+  setTimeout(function () {
+    if (isItTimeYetFn.call(scope)) {
+      callback()
+    } else {
+      self.wait(timesToCheck, timeToWait, isItTimeYetFn, scope, callback)
+    }
+  }, timeToWait)
 }
 
-function round(value, decimals) {
-    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+function round (value, decimals) {
+  return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals)
 }
 
+/** * MANUAL CONTROLS  ***/
+function ManualControls () {
+  var self = this
+  this.myTanks = []
+  this.socket = io()
+  this.connected = null
+  this.initData = null
+  this.playerSocket = null
+  this.color
 
+  this.init(function () {
+    self.createBodies()
+    self.createControls()
+    self.refresh()
 
-/*** MANUAL CONTROLS  ***/
-function ManualControls() {
-	var self = this;
-	this.myTanks = [];
-	this.socket = io();
-	this.connected = null;
-	this.initData = null;
-	this.playerSocket = null;
-	this.color;
-
-	this.init(function() {
-		self.createBodies();
-		self.createControls();
-		self.refresh();
-
-		//send back commands
-		setInterval(function() { // TODO: only do this when needed?
-			self.calculateGoalsAndSendBackCommands();
-		}, 200);
-
-		//TODO: change this?
-	 //    setInterval(function() {
-		// 	var orders = {
-		// 		tankNumbers: [0,1,2,3]
-		// 	}
-		// 	self.playerSocket.emit("fire", orders);
-		// }, 1000);setInterval(function() {
-		// 	var orders = {
-		// 		tankNumbers: [0,1,2,3]
-		// 	}
-		// 	self.playerSocket.emit("fire", orders);
-		// }, 1000);
-	});
-
+    // send back commands
+    setInterval(function () { // TODO: only do this when needed?
+      self.calculateGoalsAndSendBackCommands()
+    }, 200)
+  })
 };
 
 ManualControls.prototype = {
-	init: function(callback) {
-		var self = this;
-		this.socket.on("init", function(initData) {
-			if (self.connected) {
-				return;
-			}
-			self.initData = initData;
+  init: function (callback) {
+    var self = this
+    this.socket.on('init', function (initData) {
+      if (self.connected) {
+        return
+      }
+      self.initData = initData
 
-			var buttonWrapper = $("#button-wrapper");
-		    buttonWrapper.empty();
-		    for (var i = 0; i < self.initData.players.length; i++) {
-		        var button = $("<span data-player-index='" + i + "' class='player-button' style='background-color:" + self.initData.players[i].playerColor + " '>Player Number " + self.initData.players[i].playerNumber + "</span>").click(function() {
-		            var playerIndex = $(this).data("player-index");
-		            self.playerSocket = io("/" + self.initData.players[playerIndex].namespace);
-		            self.color = self.initData.players[playerIndex].playerColor;
-		            $(this).off();  //prevents multiple clicks
-		            callback();
-		        });
-		        buttonWrapper.append(button);
+      var buttonWrapper = $('#button-wrapper')
+      buttonWrapper.empty()
+      for (var i = 0; i < self.initData.players.length; i++) {
+        var button = $("<span data-player-index='" + i + "' class='player-button' style='background-color:" + self.initData.players[i].playerColor + " '>Player Number " + self.initData.players[i].playerNumber + '</span>').click(function () {
+          var playerIndex = $(this).data('player-index')
+          self.playerSocket = io('/' + self.initData.players[playerIndex].namespace)
+          self.color = self.initData.players[playerIndex].playerColor
+          $(this).off() // prevents multiple clicks
+          callback()
+        })
+        buttonWrapper.append(button)
+      }
 
-		    }
+      // add observer button
+      buttonWrapper.append("<span class='player-button' style='background-color:#666'>Observer</span>")
 
-		    //add observer button
-		    buttonWrapper.append("<span class='player-button' style='background-color:#666'>Observer</span>");
+      // fade out on selection
+      buttonWrapper.click(function () {
+        $('#selectionBoard').fadeOut(3500)
+        self.connected = true
+      })
 
-		    //fade out on selection
-		    buttonWrapper.click(function() {
-						$("#selectionBoard").fadeOut(3500);
-						self.connected = true;
-		    });
+      // gives GameScreen access to selected tanks
+      GameScreen.prototype.getSelectedTanks = function () {
+        if (self.myTanks) {
+          return self.myTanks.filter(function (t) {
+            return t.selected
+          })
+        }
+        return false
+      }
+    })
+  },
+  createBodies: function () {
+    var self = this
+    var myTanks = this.initData.tanks.filter(function (t) {
+      return t.color === self.color
+    })
+    for (var i = 0; i < myTanks.length; i++) {
+      this.myTanks.push(new Tank(i, this.color, myTanks[i].size))
+    }
+  },
+  createControls: function () {
+    var self = this
+    $('#canvas').click(function (e) {
+      // click is a destination
+      for (var j = 0; j < self.myTanks.length; j++) {
+        if (self.myTanks[j].selected) {
+          self.myTanks[j].setTarget(e.pageX, e.pageY)
+        }
+      }
+    })
 
-		    //gives GameScreen access to selected tanks
-		    GameScreen.prototype.getSelectedTanks = function() {
-		    	if (self.myTanks) {
-					return self.myTanks.filter(function(t) {
-						return t.selected;
-					});
-				}
-				return false;
-		    }
+    var keyboardSelectMultiple = true
+    // 49=1, 50=2, 51=3, 52=4 81=q, 87=w, 69=e, 82=r 32=space
+    $(document).keydown(function (evt) {
+      if (evt.which == 32) {
+        for (var i = 0; i < self.myTanks.length; i++) {
+          if (self.myTanks[i].selected) {
+            self.playerSocket.emit('fire', {
+              tankNumbers: [i]
+            })
+          }
+        }
+        return
+      }
 
-		});
-	},
-	createBodies: function() {
-		var self = this;
-		var myTanks = this.initData.tanks.filter(function(t) {
-			return t.color === self.color;
-		});
-		for (var i = 0; i < myTanks.length; i++) {
-			this.myTanks.push(new Tank(i, this.color, myTanks[i].size));
-		}
-	},
-	createControls: function() {
-		var self = this;
-		$("#canvas").click(function(e) {
-			// click is a destination
-			for (var j = 0; j < self.myTanks.length; j++) {
-				if (self.myTanks[j].selected) {
-					self.myTanks[j].setTarget(e.pageX, e.pageY);
-				}
-			}
-		});
+      if (keyboardSelectMultiple) {
+        keyboardSelectMultiple = false
+        for (i = 0; i < self.myTanks.length; i++) {
+          self.myTanks[i].selected = false
+        }
+        setTimeout(function () {
+          keyboardSelectMultiple = true
+        }, 500)
+      }
+      if (evt.which === 49 || evt.which === 81) {
+        self.myTanks[0].selected = true
+      }
+      if (evt.which === 50 || evt.which === 87) {
+        self.myTanks[1].selected = true
+      }
+      if (evt.which === 51 || evt.which === 69) {
+        self.myTanks[2].selected = true
+      }
+      if (evt.which === 52 || evt.which === 82) {
+        self.myTanks[3].selected = true
+      }
+    })
+  },
+  refresh: function () {
+    var self = this
+    var myTanksNewPosition
+    this.socket.on('refresh', function (gameState) {
+      myTanksNewPosition = gameState.tanks.filter(function (t) {
+        return self.myTanks[0].color === t.color
+      })
 
-		var keyboardSelectMultiple = true
-		//49=1, 50=2, 51=3, 52=4 81=q, 87=w, 69=e, 82=r 32=space
-		$(document).keydown(function(evt) {
-			if (evt.which == 32) {
-	    	for (var i = 0; i < self.myTanks.length; i++) {
-	    		if (self.myTanks[i].selected) {
-	    			self.playerSocket.emit("fire", {tankNumbers: [i]});
-	    		}
-				}
-				return;
-			}
+      // update my tanks
+      for (var i = 0; i < self.myTanks.length; i++) {
+        for (var j = 0; j < myTanksNewPosition.length; j++) {
+          if (self.myTanks[i].tankNumber === myTanksNewPosition[j].tankNumber) { // change to j for all tanks
+            self.myTanks[i].position = myTanksNewPosition[j].position
+            self.myTanks[i].angle = myTanksNewPosition[j].angle
+          }
+        }
+      }
+    })
+  },
+  calculateGoalsAndSendBackCommands: function () {
+    var orders = {}
+    var i = this.myTanks.length, speed, angleVel
+    while ((i -= 1) >= 0) {
+      this.myTanks[i].calculateGoal()
+      orders.tankNumbers = [this.myTanks[i].tankNumber]
+      orders.speed = this.myTanks[i].speed
+      orders.angleVel = this.myTanks[i].angleVel
+      this.playerSocket.emit('move', orders)
+    }
+  }
+}
 
-			if (keyboardSelectMultiple) {
-				keyboardSelectMultiple = false;
-				for (var i = 0; i < self.myTanks.length; i++) {
-					self.myTanks[i].selected = false
-				}
-				setTimeout(function() {
-					keyboardSelectMultiple = true
-				}, 500)
-			}
-			if (evt.which == 49 || evt.which == 81) {
-				self.myTanks[0].selected = true;
-			}
-			if (evt.which == 50 || evt.which == 87) {
-				self.myTanks[1].selected = true;
-			}
-			if (evt.which == 51 || evt.which == 69) {
-				self.myTanks[2].selected = true;
-			}
-			if (evt.which == 52 || evt.which == 82) {
-				self.myTanks[3].selected = true;
-			}
-		});
+var Tank = function (tankNumber, color, size) {
+  this.tankNumber = tankNumber
+  this.color = color
+  this.position = {
+    x: 0,
+    y: 0
+  }
+  this.size = size
+  this.angle
+  this.speed = 0
+  this.angleVel = 0
+  this.selected = false
 
-	},
-	refresh: function() {
-		var self = this;
-		var myTanksNewPosition;
-		this.socket.on("refresh", function(gameState) {
-			myTanksNewPosition = gameState.tanks.filter(function(t) {
-				return self.myTanks[0].color === t.color;
-			});
-
-			//update my tanks
-			for (var i = 0; i < self.myTanks.length; i++) {
-				for (var j = 0; j < myTanksNewPosition.length; j++) {
-					if (self.myTanks[i].tankNumber === myTanksNewPosition[j].tankNumber) { //change to j for all tanks
-						self.myTanks[i].position = myTanksNewPosition[j].position;
-						self.myTanks[i].angle = myTanksNewPosition[j].angle;
-					}
-				}
-			}
-
-		});
-
-	},
-	calculateGoalsAndSendBackCommands: function() {
-		var orders = {};
-		var i = this.myTanks.length, speed, angleVel; 
-		while((i-=1) >=0) {
-			this.myTanks[i].calculateGoal();
-			orders.tankNumbers = [this.myTanks[i].tankNumber];
-			orders.speed = this.myTanks[i].speed;
-			orders.angleVel = this.myTanks[i].angleVel;
-			this.playerSocket.emit("move", orders);
-		}
-	}
-};
-
-
-var Tank = function(tankNumber, color, size) {
-	this.tankNumber = tankNumber;
-	this.color = color;
-	this.position = {x: 0, y: 0};
-	this.size = size;
-	this.angle;
-	this.speed = 0;
-	this.angleVel = 0;
-	this.selected = false;
-	
-	this.target = {
-		x: 100,
-		y: 100
-	};
-	this.hasATarget = false;
-
-};
+  this.target = {
+    x: 100,
+    y: 100
+  }
+  this.hasATarget = false
+}
 
 Tank.prototype = {
-	getTarget: function() {
-		return this.target;
-	},
-	hasTarget: function() {
-		return this.hasATarget;
-	},
-	setTarget: function(x, y) {
-		this.target.x = x;
-		this.target.y = y;
-		this.hasATarget = true;
-	},
-	missionAccomplished: function() {
-		this.hasATarget = false;
-	},
-	calculateGoal: function() { 
-		if (this.hasATarget) {
+  getTarget: function () {
+    return this.target
+  },
+  hasTarget: function () {
+    return this.hasATarget
+  },
+  setTarget: function (x, y) {
+    this.target.x = x
+    this.target.y = y
+    this.hasATarget = true
+  },
+  missionAccomplished: function () {
+    this.hasATarget = false
+  },
+  calculateGoal: function () {
+    if (this.hasATarget) {
+      var distance
+      var angle
+      var degrees
+      var relativeX
+      var relativeY
 
-			var distance;
-			var angle;
-			var degrees;
-			var relativeX;
-			var relativeY;
+      distance = round(Math.sqrt(Math.pow((this.target.x - this.position.x), 2) + Math.pow((this.target.y - this.position.y), 2)), 4)
+      relativeX = this.target.x - this.position.x // relative
+      relativeY = this.target.y - this.position.y
+      angle = round(Math.atan2(-(relativeY), relativeX), 4)
+      degrees = round(angle * (180 / Math.PI), 4) // convert from radians to degrees
+      degrees = -(degrees) // tank degrees ascends clockwise. atan2 ascends counter clockwise.
 
+      // convert from -180/180 to 0/360
+      if (degrees < 0) {
+        degrees = (degrees + 360) % 360
+      }
 
-			distance = round(Math.sqrt(Math.pow(( this.target.x - this.position.x ), 2) + Math.pow(( this.target.y - this.position.y ), 2)), 4);
-			relativeX = this.target.x - this.position.x; //relative
-			relativeY = this.target.y - this.position.y;
-			angle = round(Math.atan2(-(relativeY), relativeX), 4);
-			degrees = round(angle * (180 / Math.PI), 4);  //convert from radians to degrees
-			degrees = -(degrees); // tank degrees ascends clockwise. atan2 ascends counter clockwise.
-			
-			//convert from -180/180 to 0/360
-			if (degrees < 0) {
-				degrees = (degrees + 360) % 360;
-			}
+      var angleDifference = this.angle - degrees
 
-			var angleDifference = this.angle - degrees;
+      if (angleDifference > 0) {
+        if (angleDifference < 180) {
+          this.angleVel = -1
+        } else {
+          this.angleVel = 1
+        }
+      } else {
+        if (angleDifference > -180) {
+          this.angleVel = 1
+        } else {
+          this.angleVel = -1
+        }
+      }
 
-			if (angleDifference > 0) {
-				if (angleDifference < 180) {
-					this.angleVel = -1;
-				} else {
-					this.angleVel = 1;
-				}
-			} else {
-				if (angleDifference > -180) {
-					this.angleVel = 1;
-				} else {
-					this.angleVel = -1;
-				}
-			}
+      // update tank position
+      // set angle and speed
 
+      // var angleDiff = 0;
+      // if (degrees > this.angle) { // +
+      // 	this.angleVel = 1;
+      // } else { // -
+      // 	this.angleVel = -1;
+      // }
 
-			//update tank position
-			//set angle and speed
+      // set speed
+      if (distance >= 10) {
+        this.speed = 1
+      } else {
+        this.speed = 0
+        this.angleVel = 0
+        this.missionAccomplished()
+      }
+    }
+  }
 
-			// var angleDiff = 0;
-			// if (degrees > this.angle) { // +
-			// 	this.angleVel = 1;
-			// } else { // -
-			// 	this.angleVel = -1;
-			// } 
-
-			//set speed
-			if (distance >= 10) {
-				this.speed = 1;
-			} else {
-				this.speed = 0;
-				this.angleVel = 0;
-				this.missionAccomplished();
-			}
-		}
-	}
-
-};
-
-
-
-
-
+}
 
 // var canvasElement = $("#canvas");
 // var myTanks = [];
@@ -587,18 +608,17 @@ Tank.prototype = {
 // function manualControl(initData) {
 // 	var port = "8003";
 // 	var url = 'http://localhost:' + port;
-	
 
 //     var buttonWrapper = $("#button-wrapper");
 //     buttonWrapper.empty();
 //     for (var i = 0; i < initData.players.length; i++) {
-//         var button = $("<span data-player-index='" + i + "' class='player-button' style='background-color:" + initData.players[i].playerColor + " '>Player Number " + initData.players[i].playerNumber + "</span>").click(function() {
+//         var button = $("<span data-player-index='" + i + "' class='player-button' style='background-color:" + initData.players[i].playerColor + " '>Player Number " + initData.players[i].playerNumber + "</span>").click(function () {
 //             var playerIndex = $(this).data("player-index");
 //             manualControls.socket = io(url + "/" + initData.players[playerIndex].namespace);
 //             for (var i = 0; i < initData.numOfTanks; i++) {
 // 				myTanks.push(new Tank(i, initData.players[playerIndex].playerColor));
 // 			}
-// 			setInterval(function() {
+// 			setInterval(function () {
 // 				sendBackCommands();
 // 			}, 500);
 
@@ -606,20 +626,16 @@ Tank.prototype = {
 //         buttonWrapper.append(button);
 
 //     }
-//     buttonWrapper.append("<span class='player-button' style='background-color:#666'>Observer</span>").click(function() {
+//     buttonWrapper.append("<span class='player-button' style='background-color:#666'>Observer</span>").click(function () {
 //         $("#selectionBoard").fadeOut(3500);
 //     });
 
-//     $("#canvas").click(function(e) { //only works if canvas starts in top left corner
+//     $("#canvas").click(function (e) { //only works if canvas starts in top left corner
 //     	for (var i = 0; i < myTanks.length; i++) {
 //     		myTanks[i].setTarget(e.pageX, e.pageY);
 //     	}
 //     	console.log(e.pageX, e.pageY);
 //     });
-
-    
-
-
 
 // }
 
@@ -638,8 +654,6 @@ Tank.prototype = {
 // 	}
 // }
 
-
-
 // function updateMyTanks (myTanksNewPosition) {
 // 	for (var i = 0; i < myTanks.length; i++) {
 // 		for (var j = 0; j < myTanksNewPosition.length; j++) {
@@ -651,14 +665,12 @@ Tank.prototype = {
 // 	}
 // }
 
-
 // function calculateGoal() {
 // 	var distance = 0;
 // 	var angle = 0;
 // 	var degrees = 0;
 // 	var relativeX = 0;
 // 	var relativeY = 0;
-
 
 // 	for (var i = 0; i < myTanks.length; i++) {
 // 		if (myTanks[i].hasTarget()) {
@@ -686,9 +698,8 @@ Tank.prototype = {
 // 		if (degrees > myTanks[i].angle) { // +
 // 			myTanks[i].goal.angleVel = 1;
 // 		} else { // -
-// 			myTanks[i].goal.angleVel = -1;	
-// 		} 
-
+// 			myTanks[i].goal.angleVel = -1;
+// 		}
 
 // 		//set speed
 // 		if (distance >= 20) {
@@ -701,7 +712,7 @@ Tank.prototype = {
 
 // }
 
-// var Tank = function(tankNumber, color) {
+// var Tank = function (tankNumber, color) {
 // 	this.tankNumber = tankNumber;
 // 	this.tankColor = color;
 // 	this.position = {x: 0, y: 0};
@@ -719,17 +730,17 @@ Tank.prototype = {
 // };
 
 // Tank.prototype = {
-// 	getTarget: function() {
+// 	getTarget: function () {
 // 		return this.target;
 // 	},
-// 	hasTarget: function() {
+// 	hasTarget: function () {
 // 		return this.hasATarget;
 // 	},
-// 	setTarget: function(x, y) {
+// 	setTarget: function (x, y) {
 // 		this.target.x = x;
 // 		this.target.y = y;
 // 	},
-// 	missionAccomplished: function() {
+// 	missionAccomplished: function () {
 // 		this.hasATarget = false;
 // 	}
 // };
