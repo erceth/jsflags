@@ -5,9 +5,7 @@ var Flag = require('./flag')
 var globals = require('../index')
 var Tank = require('./tank') // TODO: let player handle everything to do with Tanks
 
-var app = globals.app
 var fs = globals.fs
-var vm = globals.vm
 var http = globals.http
 var io = globals.io
 var options = globals.options
@@ -32,7 +30,7 @@ class Game {
 
     // create players
     for (let i = 0; i < this.map.bases.length; i++) {
-      this.players.push(new Player(this.map.bases[i], this.map.dimensions, this.resetGame))
+      this.players.push(new Player(this.map.bases[i], this.map.dimensions, this.resetGame.bind(this), this.sendInit.bind(this)))
     }
 
     // create tanks
@@ -52,20 +50,8 @@ class Game {
     }
 
     // connections on default namespace
-    io.on('connection', (socket) => {
-      var modifiedPlayers = []
-      for (var i = 0; i < this.players.length; i++) {
-        var modifiedPlayer = {
-          playerColor: this.players[i].playerColor,
-          playerNumber: this.players[i].playerNumber,
-          namespace: this.players[i].namespace,
-          base: this.players[i].base
-        }
-
-        modifiedPlayers.push(modifiedPlayer)
-      }
-
-      io.emit('init', {dimensions: this.map.dimensions, players: modifiedPlayers, scoreboard: this.map.scoreboard, tanks: this.gameState.tanks})
+    io.on('connection', () => {
+      this.sendInit()
     })
 
     // emit game state
@@ -89,129 +75,149 @@ class Game {
       this.gameState.bullets.push(bullet)
     }
   }
-  
-  // TODO: refactor to not use self
-  resetGame () {
-    if (self.gameState.score.red) { self.gameState.score.red.score = 0 } // TODO: simple loop?
-    if (self.gameState.score.blue) { self.gameState.score.blue.score = 0 }
-    if (self.gameState.score.green) { self.gameState.score.green.score = 0 }
-    if (self.gameState.score.purple) { self.gameState.score.purple.score = 0 }
-    for (var i = 0; i < self.gameState.tanks.length; i++) {
-      self.gameState.tanks[i].die(5000)
+
+  sendInit () {
+    let modifiedPlayers = []
+    for (var i = 0; i < this.players.length; i++) {
+      var modifiedPlayer = {
+        playerColor: this.players[i].playerColor,
+        playerNumber: this.players[i].playerNumber,
+        namespace: this.players[i].namespace,
+        base: this.players[i].base,
+        connected: this.players[i].connected
+      }
+
+      modifiedPlayers.push(modifiedPlayer)
     }
-    for (var j = 0; j < self.gameState.flags.length; j++) {
-      self.gameState.flags[j].die()
+
+    io.emit('init', {dimensions: self.map.dimensions, players: modifiedPlayers, scoreboard: self.map.scoreboard, tanks: self.gameState.tanks})
+  }
+
+  resetGame () {
+    if (this.gameState.score.red) { this.gameState.score.red.score = 0 } // TODO: simple loop?
+    if (this.gameState.score.blue) { this.gameState.score.blue.score = 0 }
+    if (this.gameState.score.green) { this.gameState.score.green.score = 0 }
+    if (this.gameState.score.purple) { this.gameState.score.purple.score = 0 }
+    for (var i = 0; i < this.gameState.tanks.length; i++) {
+      this.gameState.tanks[i].die(5000)
+    }
+    for (var j = 0; j < this.gameState.flags.length; j++) {
+      this.gameState.flags[j].die()
     }
   }
 
   update () {
     // TANKS
-    let b1, b2, i = this.gameState.tanks.length, j, k, b1Right, b1Left, b1Top, b1Bottom, b2Right, b2Left, b2Top, b2Bottom
+    let b1, b2, i = this.gameState.tanks.length, j, k // eslint-disable-line one-var
+    // outterLoop: // eslint-disable-line no-labels
     while ((i -= 1) >= 0) {
-      let okToMoveX = true, okToMoveY = true
+      let okToMoveX = true, okToMoveY = true, okToMoveXBoundary = true, okToMoveYBoundary = true // eslint-disable-line one-var
       b1 = this.gameState.tanks[i]
-      b1.calculate()
+      let move = b1.calculateMove()
+      let b1Sides = b1.calculateSides(move.stepX, move.stepY) // calculate new sides of body if it moved
+
+      // other tanks
       j = this.gameState.tanks.length
       while ((j -= 1) >= 0) {
-        if (i === j) { continue }
-        b1Right = b1.positionStep.x + b1.size.width / 2
-        b1Left = b1.positionStep.x - b1.size.width / 2
-
-        b1Top = b1.positionStep.y - b1.size.height / 2
-        b1Bottom = b1.positionStep.y + b1.size.height / 2
-
         b2 = this.gameState.tanks[j]
+        if (b1.id === b2.id) { continue } // ignore self
         if (b2.ghost) { continue } // drive through ghost tanks
 
-        b2Right = b2.position.x + b2.size.width / 2
-        b2Left = b2.position.x - b2.size.width / 2
+        let b2Sides = b2.calculateSides(b2.position.x, b2.position.y) // get sides of other body
 
-        b2Top = b2.position.y - b2.size.height / 2
-        b2Bottom = b2.position.y + b2.size.height / 2
-
-        if (!(b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top)) {
+        if (!(b1Sides.right < b2Sides.left || b1Sides.left > b2Sides.right || b1Sides.top > b2Sides.bottom || b1Sides.bottom < b2Sides.top)) {
           okToMoveX = false
-          okToMoveY = false
-          break
-        }
-        if (b1Right > this.map.dimensions.width || b1Left < 0) {
-          okToMoveX = false
-        }
-        if (b1Bottom > this.map.dimensions.height || b1Top < 0) {
           okToMoveY = false
         }
       }
+
+      // map edge
+      if (b1Sides.right > this.map.dimensions.width || b1Sides.left < 0) {
+        okToMoveXBoundary = false
+      }
+      if (b1Sides.bottom > this.map.dimensions.height || b1Sides.top < 0) {
+        okToMoveYBoundary = false
+      }
+
+      // boundaries
       j = this.gameState.boundaries.length
       while ((j -= 1) >= 0) {
         b2 = this.gameState.boundaries[j]
+        let b2Sides = b2.calculateSides(b2.position.x, b2.position.y)
 
-        b2Right = b2.position.x + b2.size.width / 2
-        b2Left = b2.position.x - b2.size.width / 2
-
-        b2Top = b2.position.y - b2.size.height / 2
-        b2Bottom = b2.position.y + b2.size.height / 2
-        if (!(b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top)) {
-          okToMoveX = false
-          okToMoveY = false
-          break
+        if (!(b1Sides.right < b2Sides.left || b1Sides.left > b2Sides.right || b1Sides.top > b2Sides.bottom || b1Sides.bottom < b2Sides.top)) {
+          okToMoveXBoundary = false
+          okToMoveYBoundary = false
         }
       }
-      if (okToMoveX) {
-        b1.moveX()
+      if (b1Sides.right > this.map.dimensions.width || b1Sides.left < 0) {
+        okToMoveXBoundary = false
       }
-      if (okToMoveY) {
-        b1.moveY()
+      if (b1Sides.bottom > this.map.dimensions.height || b1Sides.top < 0) {
+        okToMoveYBoundary = false
+      }
+
+      // finally move!
+      if ((okToMoveX || b1.ghost) && okToMoveXBoundary) {
+        b1.moveX(move.stepX)
+      }
+      if ((okToMoveY || b1.ghost) && okToMoveYBoundary) {
+        b1.moveY(move.stepY)
+      }
+      if (!b1.dead && b1.ghost && okToMoveX && okToMoveY) {
+        b1.noLongerGhost()
+      }
+
+      // check if tank intersect with flag
+      k = this.gameState.flags.length
+      while ((k -= 1) >= 0) {
+        let b2 = this.gameState.flags[k]
+        if ((b1.color === b2.color) || b1.dead || b2.tankToFollow) { continue }
+        let b2Sides = b2.calculateSides(b2.position.x, b2.position.y)
+        if (!(b1Sides.right < b2Sides.left || b1Sides.left > b2Sides.right || b1Sides.top > b2Sides.bottom || b1Sides.bottom < b2Sides.top)) {
+          b2.tankToFollow = b1
+          b1.carryFlag(b2)
+        }
       }
     }
+
     // BULLETS
     if (this.gameState.bullets.length > 0) {
       i = this.gameState.bullets.length
       while ((i -= 1) >= 0) { // extract this duplicate code to template function
         b1 = this.gameState.bullets[i]
-        b1.calculate()
+        let move = b1.calculateMove()
+        let b1Sides = b1.calculateSides(move.stepX, move.stepY) // calculate new sides of body if it moved
+
         j = this.gameState.tanks.length
         while ((j -= 1) >= 0) {
           b2 = this.gameState.tanks[j]
+          if (b2.dead) { continue }
 
-          b1Right = b1.position.x + b1.size.width / 2
-          b1Left = b1.position.x - b1.size.width / 2
+          let b2Sides = b2.calculateSides(b2.position.x, b2.position.y) // get sides of other body
 
-          b1Top = b1.position.y - b1.size.height / 2
-          b1Bottom = b1.position.y + b1.size.height / 2
-
-          b2Right = b2.position.x + b2.size.width / 2
-          b2Left = b2.position.x - b2.size.width / 2
-
-          b2Top = b2.position.y - b2.size.height / 2
-          b2Bottom = b2.position.y + b2.size.height / 2
-
-          if (!(b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top)) {
+          if (!(b1Sides.right < b2Sides.left || b1Sides.left > b2Sides.right || b1Sides.top > b2Sides.bottom || b1Sides.bottom < b2Sides.top)) {
             b1.die()
             b2.die()
-            break
+            break // outterLoop // eslint-disable-line no-labels
           }
         }
         k = this.gameState.boundaries.length
         while ((k -= 1) >= 0) {
           b2 = this.gameState.boundaries[k]
+          let b2Sides = b2.calculateSides(b2.position.x, b2.position.y)
 
-          b2Right = b2.position.x + b2.size.width / 2
-          b2Left = b2.position.x - b2.size.width / 2
-
-          b2Top = b2.position.y - b2.size.height / 2
-          b2Bottom = b2.position.y + b2.size.height / 2
-
-          if (!(b1Right < b2Left || b1Left > b2Right || b1Top > b2Bottom || b1Bottom < b2Top)) {
+          if (!(b1Sides.right < b2Sides.left || b1Sides.left > b2Sides.right || b1Sides.top > b2Sides.bottom || b1Sides.bottom < b2Sides.top)) {
             b1.die()
             b2.die()
             break
           }
         }
-        if (b1Right < 0 || b1Left > this.map.dimensions.width || b1Bottom < 0 || b1Top > this.map.dimensions.height) {
+        if (b1Sides.right < 0 || b1Sides.left > this.map.dimensions.width || b1Sides.bottom < 0 || b1Sides.top > this.map.dimensions.height) {
           b1.die()
         }
-        b1.moveX()
-        b1.moveY()
+        b1.moveX(move.stepX)
+        b1.moveY(move.stepY)
       }
 
       // filter out dead bullets
@@ -219,53 +225,26 @@ class Game {
         return !bullet.dead
       })
     }
-    let tank, flag, flagRight, flagLeft, flagTop, flagBottom, tankRight, tankLeft, tankTop, tankBottom
+
+    // FLAGS
     i = this.gameState.flags.length
     while ((i -= 1) >= 0) {
-      flag = this.gameState.flags[i]
-      j = this.gameState.tanks.length
-      while ((j -= 1) >= 0) {
-        tank = this.gameState.tanks[j]
-        if (tank.dead) { continue }
-        flagRight = flag.position.x + flag.size.width / 2
-        flagLeft = flag.position.x - flag.size.width / 2
-
-        flagTop = flag.position.y - flag.size.height / 2
-        flagBottom = flag.position.y + flag.size.height / 2
-
-        tankRight = tank.position.x + tank.size.width / 2
-        tankLeft = tank.position.x - tank.size.width / 2
-
-        tankTop = tank.position.y - tank.size.height / 2
-        tankBottom = tank.position.y + tank.size.height / 2
-        if (!(flagRight < tankLeft || flagLeft > tankRight || flagTop > tankBottom || flagBottom < tankTop)) {
-          if (tank.color !== flag.color) {
-            flag.followThisTank(tank)
-            tank.carryFlag(flag)
-          } else {
-            // flag.die();  //same color as flag, reset
-          }
-          // break;
-        }
+      if (!this.gameState.flags[i].tankToFollow) { continue }
+      let flag = this.gameState.flags[i]
+      let tank = flag.tankToFollow
+      if (tank && !tank.dead) {
+        flag.setPosition(tank.position.x, tank.position.y)
       }
-      flag.update()
-    }
-
-    // check if flag is returned to base
-    let base
-    i = this.gameState.flags.length
-    while ((i -= 1) >= 0) {
-      flag = this.gameState.flags[i]
-      j = this.players.length
+      if (tank && tank.dead) {
+        flag.slowDeath()
+        continue
+      }
+      let flagSides = b1.calculateSides(flag.position.x, flag.position.y)
+      // does flag intersect with base
+      let j = this.players.length
       while ((j -= 1) >= 0) {
-        base = this.players[j].base
-        if (!flag.tankToFollow) { continue }
-        if (!(flag.tankToFollow.color === this.players[j].playerColor)) { continue } // tank returns to it's base
-        flagRight = flag.position.x + flag.size.width / 2
-        flagLeft = flag.position.x - flag.size.width / 2
-
-        flagTop = flag.position.y - flag.size.height / 2
-        flagBottom = flag.position.y + flag.size.height / 2
+        if (flag.tankToFollow.color !== this.players[j].playerColor) { continue }
+        let base = this.players[j].base
 
         let baseRight = base.position.x + base.size.width / 2
         let baseLeft = base.position.x - base.size.width / 2
@@ -273,9 +252,10 @@ class Game {
         let baseTop = base.position.y - base.size.height / 2
         let baseBottom = base.position.y + base.size.height / 2
 
-        if (!(flagRight < baseLeft || flagLeft > baseRight || flagTop > baseBottom || flagBottom < baseTop)) {
-          this.gameState.score[flag.tankToFollow.color].score += options.pointsForCapture
+        if (!(flagSides.right < baseLeft || flagSides.left > baseRight || flagSides.top > baseBottom || flagSides.bottom < baseTop)) {
+          this.gameState.score[tank.color].score += options.pointsForCapture
           flag.die()
+          break
         }
       }
     }
@@ -283,3 +263,8 @@ class Game {
 }
 
 module.exports = Game
+
+/*
+LEFT OFF:
+- make jsflags-server depend on js-flags and js-flags-ai npm packages
+*/

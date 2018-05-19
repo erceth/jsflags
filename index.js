@@ -18,55 +18,17 @@ app.get('/', function (req, res) {
 app.get('/main.js', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/main.js'))
 })
+app.get('/base64Images.js', function (req, res) {
+  res.sendFile(path.join(__dirname, '/public/base64Images.js'))
+})
 app.get('/styles.css', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/styles.css'))
 })
-
-app.get('/img/red_tank.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/red_tank.png'))
+app.get('/socket.io.js', function (req, res) {
+  res.sendFile(path.join(__dirname, '/public/socket.io.js'))
 })
-app.get('/img/blue_tank.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/blue_tank.png'))
-})
-app.get('/img/green_tank.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/green_tank.png'))
-})
-app.get('/img/purple_tank.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/purple_tank.png'))
-})
-
-app.get('/img/red_basetop.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/red_basetop.png'))
-})
-app.get('/img/blue_basetop.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/blue_basetop.png'))
-})
-app.get('/img/green_basetop.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/green_basetop.png'))
-})
-app.get('/img/purple_basetop.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/purple_basetop.png'))
-})
-
-app.get('/img/red_flag.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/red_flag.png'))
-})
-app.get('/img/blue_flag.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/blue_flag.png'))
-})
-app.get('/img/green_flag.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/green_flag.png'))
-})
-app.get('/img/purple_flag.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/purple_flag.png'))
-})
-
-app.get('/img/grass.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/grass(100x100).png'))
-})
-
-app.get('/img/wall.png', function (req, res) {
-  res.sendFile(path.join(__dirname, '/img/wall.png'))
+app.get('/jquery-2.2.4.min.js', function (req, res) {
+  res.sendFile(path.join(__dirname, '/public/jquery-2.2.4.min.js'))
 })
 
 module.exports.options = config.options

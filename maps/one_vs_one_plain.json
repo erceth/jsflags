@@ -1,0 +1,21 @@
+{
+	"name": "plain_field",
+	"dimensions": {"width": 350, "height": 350},
+	"boundaries": [
+	],
+	"bases": [{
+		"playerNumber": 1,
+		"color": "red",
+		"position": {"x": 60, "y": 60},
+		"size": {"height": 100, "width": 100}
+	}, {
+		"playerNumber": 2,
+		"color": "blue",
+		"position": {"x": 290, "y": 290},
+		"size": {"height": 100, "width": 100}
+	}],
+	"scoreboard": {
+		"position": {"x": 100, "y": 200},
+		"size": {"width": 100, "height": 50}
+	}
+}
