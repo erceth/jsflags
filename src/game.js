@@ -32,7 +32,7 @@ class Game {
 
     // create players
     for (let i = 0; i < this.map.bases.length; i++) {
-      this.players.push(new Player(this.map.bases[i], this.map.dimensions, this.resetGame))
+      this.players.push(new Player(this.map.bases[i], this.map.dimensions, this.resetGame, this.sendInit))
     }
 
     // create tanks
@@ -52,20 +52,8 @@ class Game {
     }
 
     // connections on default namespace
-    io.on('connection', (socket) => {
-      var modifiedPlayers = []
-      for (var i = 0; i < this.players.length; i++) {
-        var modifiedPlayer = {
-          playerColor: this.players[i].playerColor,
-          playerNumber: this.players[i].playerNumber,
-          namespace: this.players[i].namespace,
-          base: this.players[i].base
-        }
-
-        modifiedPlayers.push(modifiedPlayer)
-      }
-
-      io.emit('init', {dimensions: this.map.dimensions, players: modifiedPlayers, scoreboard: this.map.scoreboard, tanks: this.gameState.tanks})
+    io.on('connection', () => {
+      this.sendInit()
     })
 
     // emit game state
@@ -88,6 +76,25 @@ class Game {
     Tank.prototype.addBulletToGame = (bullet) => {
       this.gameState.bullets.push(bullet)
     }
+  }
+
+  sendInit () {
+    let modifiedPlayers = []
+    let availablePlayers = self.players.filter((play) => {
+      return !play.connected
+    })
+    for (var i = 0; i < availablePlayers.length; i++) {
+      var modifiedPlayer = {
+        playerColor: availablePlayers[i].playerColor,
+        playerNumber: availablePlayers[i].playerNumber,
+        namespace: availablePlayers[i].namespace,
+        base: availablePlayers[i].base
+      }
+
+      modifiedPlayers.push(modifiedPlayer)
+    }
+
+    io.emit('init', {dimensions: self.map.dimensions, players: modifiedPlayers, scoreboard: self.map.scoreboard, tanks: self.gameState.tanks})
   }
 
   // TODO: refactor to not use self
@@ -262,10 +269,9 @@ class Game {
 
 module.exports = Game
 
-
 /*
 LEFT OFF:
-- upgrade JSFlags-ai dependencies
-- fix ee-jsflags-ai from not returning the flag properly
+- allow only one connection per player at a time
+- fix up front-end javascript
 - make jsflags-server depend on js-flags and js-flags-ai npm packages
 */

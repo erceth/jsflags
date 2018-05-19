@@ -5,7 +5,7 @@ var Tank = require('./tank')
 
 /* Player AND Connection */
 class Player {
-  constructor (base, dimensions, resetGame) {
+  constructor (base, dimensions, resetGame, sendInit) {
     this.playerNumber = base.playerNumber
     this.namespace = 'player' + this.playerNumber
     this.connection = io.of(this.namespace)
@@ -16,6 +16,8 @@ class Player {
       size: base.size
     }
     this.resetGame = resetGame // reset function
+    this.sendInit = sendInit
+    this.connected = false
 
     for (var i = 0; i < options.numOfTanks; i++) {
       this.tanks.push(new Tank(this.base, this.playerColor, i))
@@ -23,13 +25,20 @@ class Player {
 
     // connection part
     this.connection.on('connect', (socket) => {
+      if (this.connected) {
+        console.log('player already in use')
+        socket.disconnect(0)
+      }
+
       console.log(this.playerColor + ' connected')
       if (options.resetOnJoin) {
-        this.resetGame()
+        this.resetGame() // TODO: extract to connection class
       }
       // reset game for new player
 
       socket.on('disconnect', () => {
+        this.connected = false
+        this.sendInit()
         console.log("goodbye y'all")
       })
       socket.on('move', (orders) => {
@@ -38,6 +47,8 @@ class Player {
       socket.on('fire', (orders) => {
         this.fireTanks(orders)
       })
+      this.connected = true
+      this.sendInit() // TODO: extract to connection class
     })
   }
 

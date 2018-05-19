@@ -352,7 +352,6 @@ ManualControls.prototype = {
 			if (self.connected) {
 				return;
 			}
-			self.connected = true;
 			self.initData = initData;
 
 			var buttonWrapper = $("#button-wrapper");
@@ -374,7 +373,8 @@ ManualControls.prototype = {
 
 		    //fade out on selection
 		    buttonWrapper.click(function() {
-		        $("#selectionBoard").fadeOut(3500);
+						$("#selectionBoard").fadeOut(3500);
+						self.connected = true;
 		    });
 
 		    //gives GameScreen access to selected tanks
