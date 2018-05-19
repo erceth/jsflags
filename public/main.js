@@ -2,7 +2,7 @@
 
 var TEXT_SPACING = 15
 
-function GameScreen () {
+function GameScreen (manualControls) {
   var self = this
   this.canvas = document.getElementById('canvas')
   this.screen = this.canvas.getContext('2d')
@@ -13,6 +13,7 @@ function GameScreen () {
   this.scoreboard = {}
   this.connected = false
   this.initData = null
+  this.manualControls = manualControls
 
   this.tankImg = {
     red: null,
@@ -31,36 +32,34 @@ function GameScreen () {
   this.baseImg = {}
 
   this.loadImages()
-  this.init()
-  var timesToCheck = 5
-  wait(5, 500, this.areImagesLoadedYet, this, function () {
-    self.fillBackground()
-    self.listen()
+  this.socket.on('init', function (initData) {
+    self.init(initData, function () {
+      self.fillBackground()
+      self.socket.on('refresh', self.refresh.bind(self))
+    })
   })
 };
 
 GameScreen.prototype = {
-  init: function () {
-    var self = this
-    this.socket.on('init', function (initData) {
-      if (self.connected) {
-        return
-      }
-      self.connected = true
-      self.initData = initData
-      self.dimensions = self.initData.dimensions
-      self.scoreboard = self.initData.scoreboard
-      self.canvas.width = self.dimensions.width
-      self.canvas.height = self.dimensions.height
+  init: function (initData, callback) {
+    if (this.connected) {
+      return
+    }
+    this.connected = true
+    this.initData = initData
+    this.dimensions = this.initData.dimensions
+    this.scoreboard = this.initData.scoreboard
+    this.canvas.width = this.dimensions.width
+    this.canvas.height = this.dimensions.height
 
-      self.backgroundCanvas.width = self.dimensions.width
-      self.backgroundCanvas.height = self.dimensions.height
+    this.backgroundCanvas.width = this.dimensions.width
+    this.backgroundCanvas.height = this.dimensions.height
 
-      for (var i = 0; i < self.initData.players.length; i++) {
-        self.baseImg[self.initData.players[i].playerColor].img.width = self.initData.players[i].base.size.width
-        self.baseImg[self.initData.players[i].playerColor].img.height = self.initData.players[i].base.size.height
-      }
-    })
+    for (var i = 0; i < this.initData.players.length; i++) {
+      this.baseImg[this.initData.players[i].playerColor].img.width = this.initData.players[i].base.size.width
+      this.baseImg[this.initData.players[i].playerColor].img.height = this.initData.players[i].base.size.height
+    }
+    callback()
   },
   fillBackground: function () {
     // fill grass
@@ -220,83 +219,81 @@ GameScreen.prototype = {
       self.backgroundImg.loaded = true
     }
   },
-  listen: function () {
-    var self = this
+  refresh: function (gameState) {
+    this.gameState = gameState
+    this.screen.clearRect(0, 0, this.dimensions.width, this.dimensions.height)
 
-    this.socket.on('refresh', function (gameState) {
-      self.gameState = gameState
-      self.screen.clearRect(0, 0, self.dimensions.width, self.dimensions.height)
+    var i
 
-      var i
-
-      // update score
-      if (self.gameState.flags.length > 0) {
-        var score
-        i = self.gameState.flags.length
-        self.screen.fillStyle = 'white'
-        self.screen.font = '15px sans-serif'
-        while ((i -= 1) >= 0) {
-          score = self.gameState.score[self.gameState.flags[i].color]
-          self.screen.fillText(score.color, (self.scoreboard.position.x - self.scoreboard.size.width / 2) + TEXT_SPACING, self.scoreboard.position.y - self.scoreboard.size.height / 2 + TEXT_SPACING * (i + 1))
-          self.screen.fillText(score.score, self.scoreboard.position.x, self.scoreboard.position.y - (self.scoreboard.size.height / 2) + TEXT_SPACING * (i + 1))
-        }
-      }
-
-      // loop tanks
-      var i = self.gameState.tanks.length, o, color
+    // update score
+    if (this.gameState.flags.length > 0) {
+      var score
+      i = this.gameState.flags.length
+      this.screen.fillStyle = 'white'
+      this.screen.font = '15px sans-serif'
       while ((i -= 1) >= 0) {
-        o = self.gameState.tanks[i]
-        if (o.dead) {
-          continue
-        }
-        var t = self.tankImg[o.color].img
-        t.height = o.size.height
-        t.width = o.size.width
-        drawRotatedImage(t, o.position.x, o.position.y, o.radians, self.screen, o.tankNumber + 1)
+        score = this.gameState.score[this.gameState.flags[i].color]
+        this.screen.fillText(score.color, (this.scoreboard.position.x - this.scoreboard.size.width / 2) + TEXT_SPACING, this.scoreboard.position.y - this.scoreboard.size.height / 2 + TEXT_SPACING * (i + 1))
+        this.screen.fillText(score.score, this.scoreboard.position.x, this.scoreboard.position.y - (this.scoreboard.size.height / 2) + TEXT_SPACING * (i + 1))
       }
+    }
 
-      if (self.gameState.boundaries.length > 0) {
-        i = self.gameState.boundaries.length
-        while ((i -= 1) >= 0) {
-          o = self.gameState.boundaries[i]
-          color = (o.color) ? o.color : 'black'
-          self.screen.fillStyle = color
-          self.screen.fillRect(o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width)
-        }
+    // loop tanks
+    var i = this.gameState.tanks.length, o, color
+    while ((i -= 1) >= 0) {
+      o = this.gameState.tanks[i]
+      if (o.dead) {
+        continue
       }
-      if (self.gameState.bullets.length > 0) {
-        i = self.gameState.bullets.length
-        while ((i -= 1) >= 0) {
-          o = self.gameState.bullets[i]
-          color = (o.color) ? o.color : 'black'
-          self.screen.fillStyle = color
-          self.screen.fillRect(o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width)
-        }
+      var t = this.tankImg[o.color].img
+      t.height = o.size.height
+      t.width = o.size.width
+      drawRotatedImage(t, o.position.x, o.position.y, o.radians, this.screen, o.tankNumber + 1)
+    }
+
+    if (this.gameState.boundaries.length > 0) {
+      i = this.gameState.boundaries.length
+      while ((i -= 1) >= 0) {
+        o = this.gameState.boundaries[i]
+        color = (o.color) ? o.color : 'black'
+        this.screen.fillStyle = color
+        this.screen.fillRect(o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width)
       }
-      if (self.gameState.flags.length > 0) {
-        i = self.gameState.flags.length
-        while ((i -= 1) >= 0) {
-          o = self.gameState.flags[i]
-          var f = self.flagImg[o.color].img
-          f.height = o.size.height
-          f.width = o.size.width
-          self.screen.drawImage(f, o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width)
-        }
+    }
+    if (this.gameState.bullets.length > 0) {
+      i = this.gameState.bullets.length
+      while ((i -= 1) >= 0) {
+        o = this.gameState.bullets[i]
+        color = (o.color) ? o.color : 'black'
+        this.screen.fillStyle = color
+        this.screen.fillRect(o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width)
       }
-      // show which tanks are selected
-      var selectedTanks = self.getSelectedTanks(), tank // get selected tanks from ManualControl
+    }
+    if (this.gameState.flags.length > 0) {
+      i = this.gameState.flags.length
+      while ((i -= 1) >= 0) {
+        o = this.gameState.flags[i]
+        var f = this.flagImg[o.color].img
+        f.height = o.size.height
+        f.width = o.size.width
+        this.screen.drawImage(f, o.position.x - o.size.width / 2, o.position.y - o.size.height / 2, o.size.height, o.size.width)
+      }
+    }
+    // show which tanks are selected
+    if (this.manualControls.connected) {
+      var selectedTanks = this.manualControls.getSelectedTanks(), tank // get selected tanks from ManualControl
       if (selectedTanks) {
         i = selectedTanks.length
         while ((i -= 1) >= 0) {
           tank = selectedTanks[i]
-          self.screen.beginPath()
-          self.screen.arc(tank.position.x, tank.position.y, tank.size.width * 0.66, 0, 2 * Math.PI)
-          self.screen.stroke()
+          this.screen.beginPath()
+          this.screen.arc(tank.position.x, tank.position.y, tank.size.width * 0.66, 0, 2 * Math.PI)
+          this.screen.stroke()
         }
       }
-    })
+    }
 
-    function drawRotatedImage(img, x, y, radians, context, text) {
+    function drawRotatedImage (img, x, y, radians, context, text) {
       // save the current co-ordinate system
       // before we screw with it
       context.save()
@@ -329,8 +326,8 @@ GameScreen.prototype = {
 /** * VIEWING ***/
 
 window.onload = function () {
-  var gameScreen = new GameScreen()
   var manualControls = new ManualControls()
+  var gameScreen = new GameScreen(manualControls)
 }
 
 // handy waiting function
@@ -406,17 +403,15 @@ ManualControls.prototype = {
         $('#selectionBoard').fadeOut(3500)
         self.connected = true
       })
-
-      // gives GameScreen access to selected tanks
-      GameScreen.prototype.getSelectedTanks = function () {
-        if (self.myTanks) {
-          return self.myTanks.filter(function (t) {
-            return t.selected
-          })
-        }
-        return false
-      }
     })
+  },
+  getSelectedTanks: function () {
+    if (this.myTanks) {
+      return this.myTanks.filter(function (t) {
+        return t.selected
+      })
+    }
+    return false
   },
   createBodies: function () {
     var self = this
