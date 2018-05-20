@@ -31,11 +31,27 @@ app.get('/jquery-2.2.4.min.js', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/jquery-2.2.4.min.js'))
 })
 
-module.exports.options = config.options
+let options = config.options
+
+// parse commandline args
+var commandlineArgs = {}
+for (var i = 2; i < process.argv.length; i++) {
+  if (process.argv[i].indexOf('=')) {
+    var keyValue = process.argv[i].split('=')
+    keyValue[1] = parseInt(keyValue[1], 10) || keyValue[1] // if int change to int
+    commandlineArgs[keyValue[0]] = keyValue[1]
+  }
+}
+
+for (let key in commandlineArgs) {
+  options[key] = commandlineArgs[key]
+}
+
+module.exports.options = options
 
 // create new game
 var Game = require('./src/game')
 
-var g = new Game(config.map)
+var g = new Game('maps/' + options.map)
 
 module.exports.Game = g

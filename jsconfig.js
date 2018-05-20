@@ -1,7 +1,7 @@
-// let map = 'maps/square.json'
-// let map = 'maps/plain_field.json'
-let map = 'maps/one_vs_one.json'
-// let map = 'maps/one_vs_one_plain.json'
+// let map = 'square.json'
+// let map = 'plain_field.json'
+let map = 'one_vs_one.json'
+// let map = 'one_vs_one_plain.json'
 
 let config = {
   options: {
@@ -15,9 +15,9 @@ let config = {
     pointsForCarry: 1,
     pointsForCapture: 100,
     resetOnJoin: true,
-    maxFireFrequency: 1000
-  },
-  map: map
+    maxFireFrequency: 1000,
+    map: map
+  }
 }
 
 module.exports = config
