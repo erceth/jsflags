@@ -50,8 +50,14 @@ class Game {
     }
 
     // connections on default namespace
-    io.on('connection', () => {
+    io.on('connection', (socket) => {
       this.sendInit()
+      socket.on('disconnect', () => {
+        if (io.sockets.sockets.length >= 0) { // no one's connected? exit process
+          process.exit()
+        }
+        this.updateGameServer(true)
+      })
     })
 
     // emit game state
@@ -91,6 +97,7 @@ class Game {
     }
 
     io.emit('init', {dimensions: self.map.dimensions, players: modifiedPlayers, scoreboard: self.map.scoreboard, tanks: self.gameState.tanks})
+    this.updateGameServer(false)
   }
 
   resetGame () {
@@ -260,11 +267,24 @@ class Game {
       }
     }
   }
+
+  updateGameServer (leave) {
+    // Tells game server status of game
+    if (process && process.send) {
+      var playersConnected = this.players.filter((p) => {
+        return p.connected
+      })
+      var forServerData = {
+        maxNumPlayers: this.players.length,
+        numPlayersConnected: playersConnected.length,
+        totalConnections: io.sockets.sockets.length,
+        leave
+      }
+      process.send({
+        'join/leave': forServerData
+      })
+    }
+  }
 }
 
 module.exports = Game
-
-/*
-LEFT OFF:
-- make jsflags-server depend on js-flags and js-flags-ai npm packages
-*/
