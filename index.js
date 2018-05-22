@@ -18,8 +18,8 @@ app.get('/', function (req, res) {
 app.get('/main.js', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/main.js'))
 })
-app.get('/base64Images.js', function (req, res) {
-  res.sendFile(path.join(__dirname, '/public/base64Images.js'))
+app.get('/base64images.js', function (req, res) {
+  res.sendFile(path.join(__dirname, '/public/base64images.js'))
 })
 app.get('/styles.css', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/styles.css'))

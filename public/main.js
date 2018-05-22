@@ -1,4 +1,4 @@
-/* global io, Image base64Images, $ */
+/* global io, Image base64images, $ */
 /** * GAME SCREEN ***/
 
 var TEXT_SPACING = 15
@@ -98,10 +98,10 @@ GameScreen.prototype = {
         img: new Image(15, 15)
       }
     }
-    this.tankImg.red.img.src = base64Images.red_tank
-    this.tankImg.blue.img.src = base64Images.blue_tank
-    this.tankImg.green.img.src = base64Images.green_tank
-    this.tankImg.purple.img.src = base64Images.purple_tank
+    this.tankImg.red.img.src = base64images.red_tank
+    this.tankImg.blue.img.src = base64images.blue_tank
+    this.tankImg.green.img.src = base64images.green_tank
+    this.tankImg.purple.img.src = base64images.purple_tank
 
     // load bases
     this.baseImg = {
@@ -118,10 +118,10 @@ GameScreen.prototype = {
         img: new Image(100, 100)
       }
     }
-    this.baseImg.red.img.src = base64Images.red_basetop
-    this.baseImg.blue.img.src = base64Images.blue_basetop
-    this.baseImg.green.img.src = base64Images.green_basetop
-    this.baseImg.purple.img.src = base64Images.purple_basetop
+    this.baseImg.red.img.src = base64images.red_basetop
+    this.baseImg.blue.img.src = base64images.blue_basetop
+    this.baseImg.green.img.src = base64images.green_basetop
+    this.baseImg.purple.img.src = base64images.purple_basetop
 
     // load flags
     this.flagImg = {
@@ -138,10 +138,10 @@ GameScreen.prototype = {
         img: new Image(20, 20)
       }
     }
-    this.flagImg.red.img.src = base64Images.red_flag
-    this.flagImg.blue.img.src = base64Images.blue_flag
-    this.flagImg.green.img.src = base64Images.green_flag
-    this.flagImg.purple.img.src = base64Images.purple_flag
+    this.flagImg.red.img.src = base64images.red_flag
+    this.flagImg.blue.img.src = base64images.blue_flag
+    this.flagImg.green.img.src = base64images.green_flag
+    this.flagImg.purple.img.src = base64images.purple_flag
     this.flagImg.red.img.onload = function () {
       self.flagImg.red.loaded = true
     }
@@ -159,7 +159,7 @@ GameScreen.prototype = {
     this.wallImg = {
       img: new Image(100, 100)
     }
-    this.wallImg.img.src = base64Images.wall
+    this.wallImg.img.src = base64images.wall
     this.wallImg.img.onload = function () {
       self.wallImg.loaded = true
     }
@@ -168,7 +168,7 @@ GameScreen.prototype = {
     this.backgroundImg = {
       img: new Image(100, 100)
     }
-    this.backgroundImg.img.src = base64Images.grass
+    this.backgroundImg.img.src = base64images.grass
     this.backgroundImg.img.onload = function () {
       self.backgroundImg.loaded = true
     }
