@@ -56,7 +56,9 @@ class Game {
         if (io.sockets.sockets.length >= 0) { // no one's connected? exit process
           process.exit()
         }
-        this.updateGameServer(true)
+        setImmediate(() => {
+          this.updateGameServer(true)
+        })
       })
     })
 
