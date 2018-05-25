@@ -38,3 +38,8 @@ canvas {
 	border-radius: 4px;
 
 }
+
+.instructions {
+	position: absolute;
+	left: 700px;
+}
