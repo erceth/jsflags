@@ -9,6 +9,7 @@ function GameScreen (manualControls) {
   this.screen = this.canvas.getContext('2d')
   this.backgroundCanvas = document.getElementById('background')
   this.backgroundScreen = this.backgroundCanvas.getContext('2d')
+  this.foundation = document.getElementById('foundation')
   this.socket = io()
   this.dimensions = {}
   this.scoreboard = {}
@@ -55,6 +56,9 @@ GameScreen.prototype = {
 
     this.backgroundCanvas.width = this.dimensions.width
     this.backgroundCanvas.height = this.dimensions.height
+
+    this.foundation.style.width = this.dimensions.width + 'px'
+    this.foundation.style.height = this.dimensions.height + 'px'
 
     for (var i = 0; i < this.initData.players.length; i++) {
       this.baseImg[this.initData.players[i].playerColor].img.width = this.initData.players[i].base.size.width

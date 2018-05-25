@@ -1,3 +1,6 @@
+body {
+	margin: 0;	
+}
 canvas {
 	position: absolute;
 	top: 0;
@@ -36,10 +39,4 @@ canvas {
 	-webkit-border-radius: 4px;
 	-moz-border-radius: 4px;
 	border-radius: 4px;
-
-}
-
-.instructions {
-	position: absolute;
-	left: 700px;
 }
